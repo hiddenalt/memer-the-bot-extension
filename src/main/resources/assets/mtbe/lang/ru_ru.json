@@ -1,0 +1,42 @@
+{
+  "menu.title": "Бот Мемич: Расширение",
+  "menu.hostUrl.tooltip": "URL-адрес хоста",
+  "menu.status.pending": "Пингую...",
+  "menu.status.online": "Онлайн!",
+  "menu.status.offline": "Оффлайн ;(",
+
+  "menu.colors.table": "Таблица цветов",
+
+  "menu.color.definition.table.title": "Таблица цветов:",
+  "menu.color.definition.table.hint": "Подсказка: Выберите пункт списка и нажмите кнопку 'Редактировать'.",
+  "menu.color.definition.table.edit": "Редактировать",
+  "menu.color.definition.table.save": "Применить и сохранить",
+  "menu.color.definition.table.clear": "Удалить все значения",
+  "menu.color.definition.table.create": "Новое значение",
+
+  "menu.color.definition.table.edit.color.title": "Выбранный цвет:",
+  "menu.color.definition.table.edit.color.delete": "Удалить",
+  "menu.color.definition.table.edit.color.edit": "Изменить",
+  "menu.color.definition.table.edit.color.add": "Добавить",
+  "menu.color.definition.table.edit.color.reset": "Сброс",
+
+  "actions.title": "Действия:",
+  "actions.section.build": "Строительство:",
+  "actions.build.image": "Построить",
+  "actions.build.meme.demotivational.poster": "Демотиватор",
+  "actions.build.meme.when": "Мем 'Когда...'",
+  "actions.build.meme.comics": "Мем-комикс",
+  "actions.or": "== ИЛИ ==",
+  "actions.image.url": "URL картинки:",
+  "actions.open.options": "Настройки",
+
+  "compose.title": "Генерация схемы:",
+  "compose.generating-schematic": "Генерирую схему...",
+
+  "error.title": "Ошибка!",
+
+  "id.error.invalid-host": "Неверная ссылка на хост (%s):\n%s",
+  "id.error.colormap-is-null": "Таблица цветов (значений цвет = блок) пуста!",
+  "id.error.cant-load-image-to-schematic": "Не могу получить картинку по ссылке (%s):\n%s",
+  "id.error.exception": "Что-то пошло не так:\n%s"
+}

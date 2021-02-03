@@ -1,0 +1,43 @@
+{
+  "menu.title": "Memer the Bot: Extension",
+  "menu.hostUrl.tooltip": "Host URL",
+  "menu.status.pending": "Pinging...",
+  "menu.status.online": "Online!",
+  "menu.status.offline": "Offline ;(",
+
+  "menu.colors.table": "Table of colors",
+
+  "menu.color.definition.table.title": "Table of colors:",
+  "menu.color.definition.table.hint": "Hint: Select the row and click 'Edit value' button.",
+  "menu.color.definition.table.edit": "Edit value",
+  "menu.color.definition.table.save": "Apply & save",
+  "menu.color.definition.table.clear": "Delete all values",
+  "menu.color.definition.table.create": "New entry",
+
+
+  "menu.color.definition.table.edit.color.title": "Selected color:",
+  "menu.color.definition.table.edit.color.delete": "Delete",
+  "menu.color.definition.table.edit.color.edit": "Edit",
+  "menu.color.definition.table.edit.color.add": "Add",
+  "menu.color.definition.table.edit.color.reset": "Reset",
+
+  "actions.title": "Actions:",
+  "actions.section.build": "Build Section:",
+  "actions.build.image": "Build image",
+  "actions.build.meme.demotivational.poster": "Demotivational poster",
+  "actions.build.meme.when": "'When...' meme",
+  "actions.build.meme.comics": "Comics meme",
+  "actions.or": "== OR ==",
+  "actions.image.url": "Custom image URL:",
+  "actions.open.options": "Options",
+
+  "compose.title": "Composing schematic:",
+  "compose.generating-schematic": "Generating schematic...",
+
+  "error.title": "Error!",
+
+  "id.error.invalid-host": "Invalid host URL (%s):\n%s",
+  "id.error.cant-load-image-to-schematic": "Can't get image from URL (%s):\n%s",
+  "id.error.colormap-is-null": "Table of colors (color to block definitions) is empty!",
+  "id.error.exception": "Got an exception:\n%s"
+}

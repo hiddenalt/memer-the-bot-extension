@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "mtbe",
+  "version": "${version}",
+
+  "name": "Memer The Bot: Extension",
+  "description": "A mod to connect Memer the Bot instances with Minecraft.",
+  "authors": [
+    "HiddenaltCode"
+  ],
+  "contact": {
+    "homepage": "https://hiddenalt.ru/",
+    "sources": "https://github.com/hiddenalt/memer-the-bot-extension"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/mtbe/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ru.hiddenalt.mtbe.MemerTheBotExtensionMod"
+    ]
+  },
+  "mixins": [
+    "mtbe.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

@@ -1,0 +1,14 @@
+query GetHostInfo {
+  hostInfo {
+    name
+    version
+    image
+    phpVersion
+    links {
+      vk
+      wiki
+      github
+      telegram
+    }
+  }
+}
