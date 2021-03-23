@@ -1,24 +1,21 @@
 package ru.hiddenalt.mtbe.schematic;
 
-import com.flowpowered.nbt.ByteArrayTag;
-import com.flowpowered.nbt.CompoundMap;
-import com.flowpowered.nbt.CompoundTag;
-import com.flowpowered.nbt.ShortTag;
-import com.flowpowered.nbt.StringTag;
-import com.flowpowered.nbt.Tag;
+import com.flowpowered.nbt.*;
 import com.flowpowered.nbt.stream.NBTOutputStream;
+import net.minecraft.util.Identifier;
+import org.apache.commons.lang3.ArrayUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Schematic {
     protected SchematicBlock[][][] blocks;
     protected int width = 0;
     protected int height = 0;
     protected int length = 0;
-    protected String tempName = "tmp.schematic";
+    protected String tempName = "generated";
 
     public Schematic() {
         this.setSize(1, 1, 1);
@@ -58,17 +55,37 @@ public class Schematic {
         this.saveAs(this.getTempFilename());
     }
 
+    public String associatedURL = "";
+
     public void saveAs(String filename) throws IOException {
-        File file = new File("schematics/" + filename);
+        File file = new File("schematics/" + filename + ".eschematic");
         Map<String, Tag<?>> schematic = new HashMap();
         int width = this.width;
         int height = this.height;
         int length = this.length;
         byte[] blocks = new byte[width * height * length];
         byte[] data = new byte[width * height * length];
+
+        schematic.put("ESchematicVersion", new StringTag("ESchematicVersion", "1.0"));
+        schematic.put("CompiledBy", new StringTag("CompiledBy", "MTBE for Minecraft"));
+        schematic.put("Name", new StringTag("Name", filename));
+        schematic.put("URL", new StringTag("URL", associatedURL));
+        schematic.put("Author", new StringTag("Author", "me"));
+        schematic.put("Created", new StringTag("CreatedAt", new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(new Date())));
+
         schematic.put("Width", new ShortTag("Width", (short)width));
         schematic.put("Height", new ShortTag("Height", (short)height));
         schematic.put("Length", new ShortTag("Length", (short)length));
+
+        // byte => string
+        CompoundMap map = new CompoundMap();
+
+        // string => byte
+        HashMap<Identifier, Byte> registeredBlocks = new HashMap<>();
+
+        // air as default (if missing)
+        registeredBlocks.put(new Identifier("minecraft:air"), (byte)0);
+        map.put("0", new StringTag("0", "minecraft:air"));
 
         for(int x = 0; x < width; ++x) {
             for(int y = 0; y < height; ++y) {
@@ -77,20 +94,35 @@ public class Schematic {
                     blocks[index] = 0;
                     data[index] = 0;
                     SchematicBlock b = this.blocks[x][y][z];
+
                     if (b != null) {
-                        blocks[index] = b.getId();
-                        data[index] = b.getVariation();
+                        byte id = (byte) map.size();
+
+                        Identifier idKey = b.getIdentifier();
+                        if(registeredBlocks.containsKey(idKey)){
+                            id = registeredBlocks.get(idKey);
+                        } else {
+                            registeredBlocks.put(idKey, id);
+                            map.put(""+id, new StringTag(""+id, idKey.toString()));
+                        }
+
+                        blocks[index] = id;
                     }
                 }
             }
         }
 
+        ArrayUtils.reverse(blocks);
+        ArrayUtils.reverse(data);
+
+        CompoundTag compound = new CompoundTag("Reference", map);
+        schematic.put("Reference", compound);
+
+
         schematic.put("Materials", new StringTag("Materials", "Alpha"));
         schematic.put("Blocks", new ByteArrayTag("Blocks", blocks));
         schematic.put("Data", new ByteArrayTag("Data", data));
-        schematic.put("Name", new StringTag("Name", "wow"));
-        schematic.put("Author", new StringTag("Author", "me"));
-        schematic.put("Created", new StringTag("Created", "2020-12-12"));
+
         CompoundTag schematicTag = new CompoundTag("", new CompoundMap(schematic));
         NBTOutputStream stream = new NBTOutputStream(new FileOutputStream(file));
         stream.writeTag(schematicTag);

@@ -10,20 +10,24 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3d;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.schematic.BufferedImageToSchematic;
+import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
 import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 public class ComposeSchematic extends Screen {
     private final Screen parent;
@@ -31,9 +35,9 @@ public class ComposeSchematic extends Screen {
     private BufferedImage image;
     private Schematic schematic;
     private String url;
-    private int imageWidth = 128;
+    private int imageWidth = 32;
 
-    private int imageHeight = 128;
+    private int imageHeight = 32;
 
     public ComposeSchematic(MinecraftClient client, Screen parent, String url) {
         super(new TranslatableText("compose.title"));
@@ -81,9 +85,36 @@ public class ComposeSchematic extends Screen {
 
                 IPlayerContext player = bar.getPlayerContext();
                 Vec3d vec = player.playerFeetAsVec();
-                bar.getBuilderProcess().build(this.schematic.getTempFilename(), new BlockPos(vec.x,vec.y,vec.z));
 
-                // TODO: full schematic support to build
+                // Open generated schematic and build!
+                File file = new File(new File(MinecraftClient.getInstance().runDirectory, "schematics"), this.schematic.getTempFilename() + ".eschematic");
+                ExtendedMCEditSchematic schematic = new ExtendedMCEditSchematic(Objects.requireNonNull(NbtIo.readCompressed(file)));
+                bar.getBuilderProcess().build("open", schematic, new BlockPos(vec.x,vec.y,vec.z));
+
+
+                assert this.client != null;
+                this.client.openScreen((Screen)null);
+                this.client.mouse.lockCursor();
+            } catch (IOException e) {
+                assert this.client != null;
+                this.client.openScreen(new ErrorScreen(this.parent, new TranslatableText("id.error.exception", e.getLocalizedMessage()).getString()));
+            }
+
+        }));
+
+
+        this.addButton(new ButtonWidget(this.width / 2 - 100, this.height - 65, 200, 20, new TranslatableText("composeSchematic.build.cmd"), (buttonWidget) -> {
+
+            try {
+                this.schematic.saveAsTemp();
+
+                IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+
+                IPlayerContext player = bar.getPlayerContext();
+                Vec3d vec = player.playerFeetAsVec();
+
+
+                // TODO: build with cmd!
 
                 assert this.client != null;
                 this.client.openScreen((Screen)null);

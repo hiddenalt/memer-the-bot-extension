@@ -6,8 +6,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 public class SchematicBlock {
-    protected byte id;
-    protected byte variation;
+    protected int id;
+    protected int variation;
     protected int x;
     protected int y;
     protected int z;
@@ -16,10 +16,6 @@ public class SchematicBlock {
     public SchematicBlock(int id, int x, int y, int z) {
         this(id);
         this.setPos(x, y, z);
-    }
-
-    public SchematicBlock(byte id) {
-        this((int)id);
     }
 
     public SchematicBlock(int id) {
@@ -33,14 +29,15 @@ public class SchematicBlock {
         this.y = 0;
         this.z = 0;
         this.identifier = identifier;
-        this.id = (byte)Registry.BLOCK.getRawId(this.getBlockInstance());
+        // TODO: remove id
+        this.id = (byte)0;
     }
 
-    public byte getId() {
+    public int getId() {
         return this.id;
     }
 
-    public byte getVariation() {
+    public int getVariation() {
         return this.variation;
     }
 
