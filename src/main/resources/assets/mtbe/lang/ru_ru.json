@@ -1,5 +1,6 @@
 {
   "menu.title": "Бот Мемич: Расширение",
+  "menu.tooltip": "Бот Мемич: Расширение\nНажмите, чтобы открыть меню",
   "menu.hostUrl.tooltip": "URL-адрес хоста",
   "menu.status.pending": "Пингую...",
   "menu.status.online": "Онлайн!",

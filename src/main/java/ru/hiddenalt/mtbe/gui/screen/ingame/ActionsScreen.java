@@ -49,9 +49,9 @@ public class ActionsScreen extends Screen {
 
         this.customImageURLField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, topButtonsOffset + innerOffset * 4 + 12, 200, 20, Text.of(""));
         this.customImageURLField.setSelected(false);
-        this.customImageURLField.setText("");
-        this.customImageURLField.setChangedListener(this::onAddressFieldChange);
         this.customImageURLField.setMaxLength(99999);
+        this.customImageURLField.setText(imageURL);
+        this.customImageURLField.setChangedListener(this::onAddressFieldChange);
         this.children.add(this.customImageURLField);
 
         this.addButton(new ButtonWidget(this.width / 2 - 100, topButtonsOffset + innerOffset * 5 + 12, 200, 20, new TranslatableText("actions.build.image"), (buttonWidget) -> {

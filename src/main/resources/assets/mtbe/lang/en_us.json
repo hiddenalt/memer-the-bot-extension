@@ -1,5 +1,6 @@
 {
   "menu.title": "Memer the Bot: Extension",
+  "menu.tooltip": "Memer the Bot: Extension\nClick to open the menu",
   "menu.hostUrl.tooltip": "Host URL",
   "menu.status.pending": "Pinging...",
   "menu.status.online": "Online!",

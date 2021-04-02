@@ -12,8 +12,16 @@ public class NumberFieldWidget extends TextFieldWidget {
     private int max = 255;
     public NumberFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height) {
         super(textRenderer, x, y, width, height, Text.of(""));
-        this.setText("0");
+        this.setZeroOrMin();
     }
+
+    public NumberFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, int min, int max) {
+        this(textRenderer, x, y, width, height);
+        this.setMin(min);
+        this.setMax(max);
+    }
+
+
 
     public int getMin() {
         return min;
@@ -51,7 +59,7 @@ public class NumberFieldWidget extends TextFieldWidget {
             if( (this.getText()+keyCode).equals("") ){
                 this.setZeroOrMin();
                 return false;
-            } else if (Integer.parseInt(this.getText()+keyCode) > 255) {
+            } else if (Integer.parseInt(this.getText()+keyCode) > this.max) {
                 return false;
             }
 
@@ -60,7 +68,6 @@ public class NumberFieldWidget extends TextFieldWidget {
 
             return super.charTyped(chr, keyCode);
         } catch (NumberFormatException ignored){
-            System.out.println("exception!!!!!!!!!!!!");
             this.setText(former);
         }
         return false;
@@ -106,6 +113,12 @@ public class NumberFieldWidget extends TextFieldWidget {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    public int getValue(){
+        return Integer.parseInt(this.getText());
+    }
 
+    public void setValue(int i){
+        this.setText(""+i);
+    }
 
 }
