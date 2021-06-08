@@ -172,7 +172,7 @@ public class Schematic {
                     InputStream stream = client.getResourceManager().getResource(texture).getInputStream();
                     BufferedImage imBuff = ImageIO.read(stream);
 
-                    g2d.drawImage(imBuff, x*blockScale + 1,y * blockScale + 1,blockScale,blockScale, null);
+                    g2d.drawImage(imBuff, x*blockScale,y * blockScale,blockScale,blockScale, null);
                 }
             }
         }
