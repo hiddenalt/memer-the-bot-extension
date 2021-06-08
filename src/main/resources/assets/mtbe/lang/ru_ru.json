@@ -39,5 +39,8 @@
   "id.error.invalid-host": "Неверная ссылка на хост (%s):\n%s",
   "id.error.colormap-is-null": "Таблица цветов (значений цвет = блок) пуста!",
   "id.error.cant-load-image-to-schematic": "Не могу получить картинку по ссылке (%s):\n%s",
-  "id.error.exception": "Что-то пошло не так:\n%s"
+  "id.error.exception": "Что-то пошло не так:\n%s",
+
+  "composeSchematic.build.cmd": "Построить командами в чате",
+  "composeSchematic.build.fabritone": "Построить через Fabritone"
 }

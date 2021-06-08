@@ -40,5 +40,8 @@
   "id.error.invalid-host": "Invalid host URL (%s):\n%s",
   "id.error.cant-load-image-to-schematic": "Can't get image from URL (%s):\n%s",
   "id.error.colormap-is-null": "Table of colors (color to block definitions) is empty!",
-  "id.error.exception": "Got an exception:\n%s"
+  "id.error.exception": "Got an exception:\n%s",
+
+  "composeSchematic.build.cmd": "Build using chat commands",
+  "composeSchematic.build.fabritone": "Build with Fabritone"
 }
