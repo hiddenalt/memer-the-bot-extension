@@ -18,7 +18,7 @@ public class HUD {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         TextureManager tm = minecraftClient.getTextureManager();
 
-
+//        minecraftClient.gameRenderer.getCamera().
 
         ArrayList<Process> processes = ProcessManager.getAll();
         if(processes.size() > 0) {

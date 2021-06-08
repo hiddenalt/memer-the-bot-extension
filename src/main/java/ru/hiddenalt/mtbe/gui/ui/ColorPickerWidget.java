@@ -108,13 +108,13 @@ public class ColorPickerWidget extends AbstractButtonWidget implements Drawable,
         int blue = this.color.getBlue();
         switch(type) {
             case 1:
-                red = Integer.parseInt(this.redField.getText());
+                red = this.redField.getValue();
                 break;
             case 2:
-                green = Integer.parseInt(this.greenField.getText());
+                green = this.greenField.getValue();
                 break;
             case 3:
-                blue = Integer.parseInt(this.blueField.getText());
+                blue = this.blueField.getValue();
         }
 
         this.color = new Color(red, green, blue);

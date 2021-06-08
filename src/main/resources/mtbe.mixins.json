@@ -8,7 +8,8 @@
   "client": [
     "TitleScreenMixin",
     "GameMenuScreenMixin",
-    "InGameHudMixin"
+    "InGameHudMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

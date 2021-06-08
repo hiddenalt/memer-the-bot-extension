@@ -11,7 +11,15 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.options.OptionsScreen;
+import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
+import ru.hiddenalt.mtbe.gui.ui.tooltip.SimpleTooltip;
+
+import java.awt.image.BufferedImageOp;
+import java.nio.file.Path;
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class ActionsScreen extends Screen {
@@ -22,6 +30,7 @@ public class ActionsScreen extends Screen {
     private int topButtonsOffset = 40;
     private int buttonOffset = 20 * 2;
     private int innerOffset = 25;
+    private ButtonWidgetTexturedFix buildImage;
 
     public ActionsScreen(Screen parent) {
         super(new TranslatableText("actions.title"));
@@ -47,17 +56,31 @@ public class ActionsScreen extends Screen {
 //            this.client.openScreen(this.parent);
         }));
 
-        this.customImageURLField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, topButtonsOffset + innerOffset * 4 + 12, 200, 20, Text.of(""));
+        this.customImageURLField = new TextFieldWidget(
+                this.textRenderer,
+                this.width / 2 - 100,
+                topButtonsOffset + innerOffset * 4 + 12,
+                200 - 25,
+                20,
+                Text.of("")
+        );
         this.customImageURLField.setSelected(false);
         this.customImageURLField.setMaxLength(99999);
         this.customImageURLField.setText(imageURL);
         this.customImageURLField.setChangedListener(this::onAddressFieldChange);
         this.children.add(this.customImageURLField);
 
-        this.addButton(new ButtonWidget(this.width / 2 - 100, topButtonsOffset + innerOffset * 5 + 12, 200, 20, new TranslatableText("actions.build.image"), (buttonWidget) -> {
+
+
+        // this.width / 2 + 100 - 20
+        // topButtonsOffset + innerOffset * 5 + 12
+        buildImage = new ButtonWidgetTexturedFix(this.width / 2 + 100 - 20, topButtonsOffset + innerOffset * 4 + 12, 20, 20, Text.of(""), (buttonWidget) -> {
             assert this.client != null;
             this.client.openScreen(new ComposeSchematic(this.client,this, this.customImageURLField.getText()));
-        }));
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("actions.build.image")),
+                new Identifier("mtbe:textures/open_file.png"), 0, 0, 20, 20);
+        this.addButton(buildImage);
 
 
         // "Done" button
@@ -73,6 +96,12 @@ public class ActionsScreen extends Screen {
         }));
     }
 
+    public void filesDragged(List<Path> paths) {
+        if(paths.size() > 0){
+            this.customImageURLField.setText("file:///"+paths.get(0).toString());
+            buildImage.onPress();
+        }
+    }
 
 
     private void onAddressFieldChange(String s) {

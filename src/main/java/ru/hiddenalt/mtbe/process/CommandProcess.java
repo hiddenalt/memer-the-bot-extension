@@ -37,12 +37,12 @@ public class CommandProcess extends Process {
 
 
             for(int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    ArrayUtils.reverse(blocks[x][y]);
-                }
+//                for (int y = 0; y < height; y++) {
+//                    ArrayUtils.reverse(blocks[x][y]);
+//                }
                 ArrayUtils.reverse(blocks[x]);
             }
-            ArrayUtils.reverse(blocks);
+//            ArrayUtils.reverse(blocks);
 
             int operations = 0;
 
@@ -72,9 +72,9 @@ public class CommandProcess extends Process {
                             String fullID = id.toString();
 
                             String sendToChat = this.cmd
-                                    .replaceAll("%X%", ""+ (Math.round(this.startPos.x) + x))
-                                    .replaceAll("%Y%", ""+ (Math.round(this.startPos.y) + y))
-                                    .replaceAll("%Z%", ""+ (Math.round(this.startPos.z) + z))
+                                    .replaceAll("%X%", ""+ ((long)(this.startPos.x) + x))
+                                    .replaceAll("%Y%", ""+ ((long)(this.startPos.y) + y))
+                                    .replaceAll("%Z%", ""+ ((long)(this.startPos.z) + z))
                                     .replaceAll("%NAMESPACE%", ""+namespace)
                                     .replaceAll("%PATH%", ""+path)
                                     .replaceAll("%BLOCK_ID%", ""+fullID)

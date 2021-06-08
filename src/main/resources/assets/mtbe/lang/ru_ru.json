@@ -28,7 +28,7 @@
   "actions.build.meme.when": "Мем 'Когда...'",
   "actions.build.meme.comics": "Мем-комикс",
   "actions.or": "== ИЛИ ==",
-  "actions.image.url": "URL картинки:",
+  "actions.image.url": "Путь/URL файла (можно перетащить):",
   "actions.open.options": "Настройки",
 
   "compose.title": "Генерация схемы:",

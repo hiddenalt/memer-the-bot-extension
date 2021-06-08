@@ -15,9 +15,12 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
+import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAs2DPNGScreen;
+import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAsESchematicScreen;
 import ru.hiddenalt.mtbe.gui.screen.options.ColorDefinitionTableScreen;
 import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
 import ru.hiddenalt.mtbe.gui.ui.NumberFieldWidget;
@@ -25,6 +28,7 @@ import ru.hiddenalt.mtbe.gui.ui.tooltip.SimpleTooltip;
 import ru.hiddenalt.mtbe.process.BaritoneProcess;
 import ru.hiddenalt.mtbe.process.CommandProcess;
 import ru.hiddenalt.mtbe.process.ProcessManager;
+import ru.hiddenalt.mtbe.render.WorldRender;
 import ru.hiddenalt.mtbe.schematic.BufferedImageToSchematic;
 import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
@@ -36,6 +40,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
 public class ComposeSchematic extends Screen {
@@ -43,6 +49,10 @@ public class ComposeSchematic extends Screen {
     private ButtonWidget closeButton;
     private NumberFieldWidget widthField;
     private NumberFieldWidget heightField;
+
+    private NumberFieldWidget x;
+    private NumberFieldWidget y;
+    private NumberFieldWidget z;
 
     enum Render {
         Image,
@@ -75,6 +85,7 @@ public class ComposeSchematic extends Screen {
             this.image = ImageIO.read(new URL(this.url).openStream());
             this.modyfiedImage = this.image;
 
+            if(this.image == null) throw new Exception("File is unsupported");
 
         } catch (IOException e) {
             assert this.client != null;
@@ -98,6 +109,8 @@ public class ComposeSchematic extends Screen {
             this.heightField.setText(""+this.modyfiedImage.getHeight());
 
             this.schematic = generator.generateSchematic();
+
+
         } catch (Exception e){
             assert this.client != null;
             this.client.openScreen(new ErrorScreen(this.parent, new TranslatableText("id.error.exception", e.getLocalizedMessage()).getString()));
@@ -139,13 +152,15 @@ public class ComposeSchematic extends Screen {
 
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-
+            assert this.client != null;
+            this.client.openScreen(new SaveAs2DPNGScreen(this, this.schematic));
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveAsPng")),
                 new Identifier("mtbe:textures/compose_schematic/save_as_png.png"), 0, 0, iconWidth, iconHeight));
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-
+            assert this.client != null;
+            this.client.openScreen(new SaveAsESchematicScreen(this, this.schematic));
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveAsESchematic")),
                 new Identifier("mtbe:textures/compose_schematic/save_as_eschematic.png"), 0, 0, iconWidth, iconHeight));
@@ -230,6 +245,22 @@ public class ComposeSchematic extends Screen {
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.image.decrease")),
                 new Identifier("mtbe:textures/compose_schematic/decrease_image.png"), 0, 0, iconWidth, iconHeight));
+
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 6, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+
+            IPlayerContext player = bar.getPlayerContext();
+            Vec3d vec = player.playerFeetAsVec();
+
+//            WorldRender.showPreview(this.schematic, new BlockPos(vec.x, vec.y, vec.z));
+
+            assert this.client != null;
+            this.client.openScreen((Screen)null);
+            this.client.mouse.lockCursor();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.showPreview")),
+                new Identifier("mtbe:textures/compose_schematic/preview.png"), 0, 0, iconWidth, iconHeight));
 
 
 
@@ -334,7 +365,7 @@ public class ComposeSchematic extends Screen {
                 IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
                 IPlayerContext player = bar.getPlayerContext();
-                Vec3d vec = player.playerFeetAsVec();
+                Vec3d vec = new Vec3d(this.x.getValue(), this.y.getValue(), this.z.getValue());
 
 
                 // TODO: build with cmd!
@@ -353,7 +384,33 @@ public class ComposeSchematic extends Screen {
 
         }));
 
+
+        this.z = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 1, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        this.z.setValue((int) this.client.player.getZ());
+        this.y = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 2, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        this.y.setValue((int) this.client.player.getY());
+        this.x = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 3, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        this.x.setValue((int) this.client.player.getX());
+
+        this.addButton(this.x);
+        this.addButton(this.y);
+        this.addButton(this.z);
+
+
+
+
+
+
+
         if(this.image == null){
+            downloadImage();
+            generateSchematic();
+        }
+    }
+
+    public void filesDragged(List<Path> paths) {
+        if(paths.size() > 0){
+            this.url = "file:///"+paths.get(0).toString();
             downloadImage();
             generateSchematic();
         }
@@ -362,9 +419,16 @@ public class ComposeSchematic extends Screen {
     public void resize(MinecraftClient client, int width, int height) {
         String widthFieldText = this.widthField.getText();
         String heightFieldText = this.heightField.getText();
+        String xText = this.x.getText();
+        String yText = this.y.getText();
+        String zText = this.z.getText();
+
         this.init(client, width, height);
         this.widthField.setText(widthFieldText);
         this.heightField.setText(heightFieldText);
+        this.x.setText(xText);
+        this.y.setText(yText);
+        this.z.setText(zText);
     }
 
     private int renderedImageHash = 0;
@@ -377,6 +441,11 @@ public class ComposeSchematic extends Screen {
         switch (this.render){
 
             case Image:
+                if(modyfiedImage == null) {
+                    drawCenteredText(matrices, this.textRenderer, new TranslatableText("compose.image-error"), this.width / 2, this.height / 2, Color.red.getRGB());
+                    break;
+                }
+
                 float z = this.zoom;
 
                 blockSize *= z;
@@ -413,6 +482,9 @@ public class ComposeSchematic extends Screen {
                     16,
                     128
                 );
+
+
+//                drawCenteredText(matrices, this.textRenderer, Text.of("XYZ: "), this.width / 2, 15, 16777215);
 
                 break;
 
@@ -469,12 +541,67 @@ public class ComposeSchematic extends Screen {
                     SchematicBlock block = new SchematicBlock(1);
                     Block blockInstance = block.getBlockInstance();
 
-                    assert this.client != null;
-                    Identifier id = this.client.getBakedModelManager().getBlockModels().getModel(blockInstance.getDefaultState()).getSprite().getId();
+//                    assert this.client != null;
+//                    Identifier id = this.client.getBakedModelManager().getBlockModels().getModel(blockInstance.getDefaultState()).getSprite().getId();
                     break;
                 }
         }
 
+
+
+        if(schematic != null) {
+            int blocksCount = this.schematic.getWidth() * this.schematic.getHeight();
+
+            drawCenteredText(
+                    matrices,
+                    this.textRenderer,
+                    Text.of("Blocks required: " + blocksCount),
+                    Math.round(this.width / 2),
+                    Math.round(50),
+                    (blocksCount > 9 * 4 * 64) ? (Color.red.getRGB()) : ( (blocksCount > 9 * 64) ? Color.yellow.getRGB() : Color.green.getRGB())
+            );
+
+        }
+
+        if(modyfiedImage != null){
+            drawCenteredText(
+                    matrices,
+                    this.textRenderer,
+                    Text.of("Starts here (left-bottom corner):"),
+                    Math.round((this.width / 2 - (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
+                    Math.round((this.height / 2 + (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY)),
+                    Color.white.getRGB()
+            );
+
+            drawCenteredText(
+                    matrices,
+                    this.textRenderer,
+                    Text.of("XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]"),
+                    Math.round((this.width / 2 - (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
+                    Math.round((this.height / 2 + (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY) + 15),
+                    Color.white.getRGB()
+            );
+
+
+            drawCenteredText(
+                    matrices,
+                    this.textRenderer,
+                    Text.of("Ends here (right-top corner):"),
+                    Math.round((this.width / 2 + (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
+                    Math.round((this.height / 2 - (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY)),
+                    Color.white.getRGB()
+            );
+
+            drawCenteredText(
+                    matrices,
+                    this.textRenderer,
+                    Text.of("XYZ: ["+(this.x.getValue() + this.schematic.getWidth())+"; "+(this.y.getValue() + this.schematic.getHeight())+"; "+this.z.getValue()+"]"),
+                    Math.round((this.width / 2 + (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
+                    Math.round((this.height / 2 -  (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY) + 15),
+                    Color.white.getRGB()
+            );
+
+        }
 
 
         drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 15, 16777215);
@@ -482,12 +609,34 @@ public class ComposeSchematic extends Screen {
         this.widthField.renderButton(matrices, mouseX, mouseY, delta);
         this.heightField.renderButton(matrices, mouseX, mouseY, delta);
 
+
+        drawCenteredText(matrices, this.textRenderer, Text.of("X:"), 7, this.height + 7 - 25 * 3, 16777215);
+        drawCenteredText(matrices, this.textRenderer, Text.of("Y:"), 7, this.height + 7 - 25 * 2, 16777215);
+        drawCenteredText(matrices, this.textRenderer, Text.of("Z:"), 7, this.height + 7 - 25 * 1, 16777215);
+
+        this.x.renderButton(matrices, mouseX, mouseY, delta);
+        this.y.renderButton(matrices, mouseX, mouseY, delta);
+        this.z.renderButton(matrices, mouseX, mouseY, delta);
+
         super.render(matrices, mouseX, mouseY, delta);
     }
 
+    public void tick() {
+        this.widthField.tick();
+        this.heightField.tick();
+
+        this.x.tick();
+        this.y.tick();
+        this.z.tick();
+    }
+
     public void zoom(float k){
-        if(k > 1 && this.zoom <= 8) this.zoom *= k;
-        if(k < 1 && this.zoom >= 0.5) this.zoom *= k;
+        if(k > 1 && this.zoom <= 8) {
+            this.zoom *= k;
+        }
+        if(k < 1 && this.zoom >= 0.5) {
+            this.zoom *= k;
+        }
     }
 
     @Override

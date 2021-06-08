@@ -29,7 +29,7 @@
   "actions.build.meme.when": "'When...' meme",
   "actions.build.meme.comics": "Comics meme",
   "actions.or": "== OR ==",
-  "actions.image.url": "Custom image URL:",
+  "actions.image.url": "File path/URL (drag&drop possible):",
   "actions.open.options": "Options",
 
   "compose.title": "Composing schematic:",

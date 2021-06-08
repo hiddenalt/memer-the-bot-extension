@@ -2,11 +2,17 @@ package ru.hiddenalt.mtbe.schematic;
 
 import com.flowpowered.nbt.*;
 import com.flowpowered.nbt.stream.NBTOutputStream;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.ArrayUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -52,12 +58,12 @@ public class Schematic {
     }
 
     public void saveAsTemp() throws IOException {
-        this.saveAs(this.getTempFilename());
+        this.saveAsESchematic(this.getTempFilename());
     }
 
     public String associatedURL = "";
 
-    public void saveAs(String filename) throws IOException {
+    public void saveAsESchematic(String filename) throws IOException {
         File file = new File("schematics/" + filename + ".eschematic");
         Map<String, Tag<?>> schematic = new HashMap();
         int width = this.width;
@@ -127,6 +133,54 @@ public class Schematic {
         NBTOutputStream stream = new NBTOutputStream(new FileOutputStream(file));
         stream.writeTag(schematicTag);
         stream.close();
+    }
+
+    public void saveAs2DPNG(String filename) throws IOException{
+        int w = this.getWidth();
+        int h = this.getHeight();
+        int l = this.getLength();
+        MinecraftClient client = MinecraftClient.getInstance();
+
+
+        int blockScale = 16;
+
+        int imageWidth = w*blockScale;
+        int imageHeight = h*blockScale;
+
+        BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bufferedImage.createGraphics();
+
+        // fill all the image with transparent color
+        Color tc = new Color(0f,0f,0f,0f );
+        g2d.setColor(tc);
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+
+
+        SchematicBlock[][][] blocks = this.getBlocks();
+
+        for(int x = 0; x < w; ++x) {
+            for(int y = 0; y < h; ++y) {
+                int z = 0;
+                SchematicBlock block = blocks[x][y][z];
+
+                if(block.getIdentifier().equals(new Identifier("minecraft:air"))) continue;
+
+                if (block != null) {
+                    Identifier texture = new Identifier(block.getIdentifier().getNamespace() + ":textures/block/" + block.getIdentifier().getPath() + ".png");
+
+                    assert client != null;
+                    InputStream stream = client.getResourceManager().getResource(texture).getInputStream();
+                    BufferedImage imBuff = ImageIO.read(stream);
+
+                    g2d.drawImage(imBuff, x*blockScale + 1,y * blockScale + 1,blockScale,blockScale, null);
+                }
+            }
+        }
+
+        g2d.dispose();
+
+        File file = new File(""+filename);
+        ImageIO.write(bufferedImage, "png", file);
     }
 
     public int getWidth() {
