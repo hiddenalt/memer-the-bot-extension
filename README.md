@@ -14,6 +14,8 @@ A mod to connect [Memer the Bot](https://github.com/hiddenalt/memer-the-bot) ins
 and build images with blocks via [Fabritone](https://gitlab.com/CDAGaming/fabritone) *([Baritone](https://github.com/cabaletta/baritone) for Fabric)* or using chat commands *(like /setblock)* both in single game and multiplayer. Provides utility of 
 custom color to block assignment, image export as schematic, minecraftizing image png export (resource pack sensitive). Supports PNG (incl. alpha channel), JPEG/JPG, GIF (1st frame), BMP image import from URL or local storage. 
 
+**Note:** mod is under construction, some features may be missing.
+
 ## Screenshots
 
 <p align="center"><img height="256" width="480" src="https://github.com/hiddenalt/memer-the-bot-extension/blob/master/screenshot-1.png?raw=true"></p>
