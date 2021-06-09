@@ -158,6 +158,9 @@ public class Schematic {
 
         SchematicBlock[][][] blocks = this.getBlocks();
 
+
+        HashMap<Identifier, BufferedImage> idTextureMap = new HashMap<>();
+
         for(int x = 0; x < w; ++x) {
             for(int y = 0; y < h; ++y) {
                 int z = 0;
@@ -166,11 +169,18 @@ public class Schematic {
                 if(block.getIdentifier().equals(new Identifier("minecraft:air"))) continue;
 
                 if (block != null) {
+
                     Identifier texture = new Identifier(block.getIdentifier().getNamespace() + ":textures/block/" + block.getIdentifier().getPath() + ".png");
 
-                    assert client != null;
-                    InputStream stream = client.getResourceManager().getResource(texture).getInputStream();
-                    BufferedImage imBuff = ImageIO.read(stream);
+                    BufferedImage imBuff = idTextureMap.get(texture);
+
+                    // If not cached
+                    if(imBuff == null) {
+                        assert client != null;
+                        InputStream stream = client.getResourceManager().getResource(texture).getInputStream();
+                        imBuff = ImageIO.read(stream);
+                        idTextureMap.put(texture, imBuff);
+                    }
 
                     g2d.drawImage(imBuff, x*blockScale,y * blockScale,blockScale,blockScale, null);
                 }
