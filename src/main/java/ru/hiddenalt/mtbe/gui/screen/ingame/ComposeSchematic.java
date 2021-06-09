@@ -21,6 +21,7 @@ import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAs2DPNGScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAsESchematicScreen;
+import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveImageAsPNGScreen;
 import ru.hiddenalt.mtbe.gui.screen.options.ColorDefinitionTableScreen;
 import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
 import ru.hiddenalt.mtbe.gui.ui.NumberFieldWidget;
@@ -153,37 +154,44 @@ public class ComposeSchematic extends Screen {
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             assert this.client != null;
-            this.client.openScreen(new SaveAs2DPNGScreen(this, this.schematic));
+            this.client.openScreen(new SaveImageAsPNGScreen(this, this.modyfiedImage));
         },
-                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveAsPng")),
-                new Identifier("mtbe:textures/compose_schematic/save_as_png.png"), 0, 0, iconWidth, iconHeight));
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveImageAsPng")),
+                new Identifier("mtbe:textures/compose_schematic/save.png"), 0, 0, iconWidth, iconHeight));
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            assert this.client != null;
+            this.client.openScreen(new SaveAs2DPNGScreen(this, this.schematic));
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.export2DSchematicAsPng")),
+                new Identifier("mtbe:textures/compose_schematic/save_as_png.png"), 0, 0, iconWidth, iconHeight));
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 3, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             assert this.client != null;
             this.client.openScreen(new SaveAsESchematicScreen(this, this.schematic));
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveAsESchematic")),
                 new Identifier("mtbe:textures/compose_schematic/save_as_eschematic.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 3, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 4, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
 
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.saveAsSchematic")),
                 new Identifier("mtbe:textures/compose_schematic/save_as_schematic.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 4, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 5, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             this.zoom((float) 2);
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.zoomIn")),
                 new Identifier("mtbe:textures/compose_schematic/zoom_in.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 5, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 6, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             this.zoom((float) 1/2);
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.zoomOut")),
                 new Identifier("mtbe:textures/compose_schematic/zoom_out.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 6, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 7, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             this.zoom = 1;
             this.offsetX = 0;
             this.offsetY = 0;
@@ -192,9 +200,17 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/center.png"), 0, 0, iconWidth, iconHeight));
 
 
+
+
+
+
         xPos = 10 + iconWidth + 4;
         yPos = 10;
         offset = 2;
+
+
+
+
 
         // Left column
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
