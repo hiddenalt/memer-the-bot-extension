@@ -17,6 +17,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import org.apache.commons.lang3.SerializationUtils;
 import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAs2DPNGScreen;
@@ -37,8 +38,8 @@ import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
+import java.awt.color.ColorSpace;
+import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
@@ -200,7 +201,22 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/center.png"), 0, 0, iconWidth, iconHeight));
 
 
+        /*
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 8, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
+            IPlayerContext player = bar.getPlayerContext();
+            Vec3d vec = player.playerFeetAsVec();
+
+//            WorldRender.showPreview(this.schematic, new BlockPos(vec.x, vec.y, vec.z));
+
+            assert this.client != null;
+            this.client.openScreen((Screen)null);
+            this.client.mouse.lockCursor();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.showPreview")),
+                new Identifier("mtbe:textures/compose_schematic/preview.png"), 0, 0, iconWidth, iconHeight));
+        */
 
 
 
@@ -213,28 +229,50 @@ public class ComposeSchematic extends Screen {
 
 
         // Left column
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 0, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            downloadImage();
+            generateSchematic();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.redownloadImage")),
+                new Identifier("mtbe:textures/compose_schematic/redownload.png"), 0, 0, iconWidth, iconHeight));
+
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            generateSchematic();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.regenerateImage")),
+                new Identifier("mtbe:textures/compose_schematic/regenerate.png"), 0, 0, iconWidth, iconHeight));
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            this.modyfiedImage = this.image;
+            this.renderedImageHash = 0; // force redraw image
+            generateSchematic();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.loadFromCache")),
+                new Identifier("mtbe:textures/compose_schematic/no_effects.png"), 0, 0, iconWidth, iconHeight));
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 3, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             modyfiedImage = Scalr.rotate(this.modyfiedImage, Scalr.Rotation.FLIP_VERT, new BufferedImageOp[0]);
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.verticalFlip")),
                 new Identifier("mtbe:textures/compose_schematic/vertical_flip.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 4, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             modyfiedImage = Scalr.rotate(this.modyfiedImage, Scalr.Rotation.FLIP_HORZ, new BufferedImageOp[0]);
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.horizontalFlip")),
                 new Identifier("mtbe:textures/compose_schematic/horizontal_flip.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 3, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 5, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             modyfiedImage = Scalr.rotate(this.modyfiedImage, Scalr.Rotation.CW_90, new BufferedImageOp[0]);
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.rotate")),
                 new Identifier("mtbe:textures/compose_schematic/rotate.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 4, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 6, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             modyfiedImage = Scalr.resize(
                     this.modyfiedImage,
                     Scalr.Method.QUALITY,
@@ -248,7 +286,7 @@ public class ComposeSchematic extends Screen {
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.image.enlarge")),
                 new Identifier("mtbe:textures/compose_schematic/enlarge_image.png"), 0, 0, iconWidth, iconHeight));
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 5, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 7, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             modyfiedImage = Scalr.resize(
                     this.modyfiedImage,
                     Scalr.Method.QUALITY,
@@ -263,23 +301,99 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/decrease_image.png"), 0, 0, iconWidth, iconHeight));
 
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 6, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
-            IPlayerContext player = bar.getPlayerContext();
-            Vec3d vec = player.playerFeetAsVec();
+        xPos = 10 + iconWidth + 4 + iconWidth + 4;
+        yPos = 10;
+        offset = 2;
 
-//            WorldRender.showPreview(this.schematic, new BlockPos(vec.x, vec.y, vec.z));
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 0, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            if (this.modyfiedImage == null) return;
 
-            assert this.client != null;
-            this.client.openScreen((Screen)null);
-            this.client.mouse.lockCursor();
+            BufferedImage image = new BufferedImage(modyfiedImage.getWidth(), modyfiedImage.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics gr = image.getGraphics();
+            gr.drawImage(modyfiedImage, 0, 0, null);
+            gr.dispose();
+
+            int w = image.getWidth();
+            int h = image.getHeight();
+
+
+            for (int x = 0; x < w; x++){
+                for (int y = 0; y < h; y++){
+                    int pixel = image.getRGB(x,y);
+                    Color col = new Color(pixel, true);
+
+                    int a = col.getAlpha();
+                    if(a == 0) continue;
+                    int r = col.getRed();
+                    int g = col.getGreen();
+                    int b = col.getBlue();
+
+                    int avg = (r+g+b)/3;
+
+                    image.setRGB(x, y, (a<<24) | (avg<<16) | (avg<<8) | avg);
+                }
+            }
+
+            this.modyfiedImage = image;
+
+            generateSchematic();
         },
-                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.showPreview")),
-                new Identifier("mtbe:textures/compose_schematic/preview.png"), 0, 0, iconWidth, iconHeight));
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.grayscale")),
+                new Identifier("mtbe:textures/compose_schematic/grayscale.png"), 0, 0, iconWidth, iconHeight));
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            if (this.modyfiedImage == null) return;
+
+            Kernel kernel = new Kernel(3,3, new float[]{
+                    0.f, -1.f, 0.f,
+                    -1.f, 5.0f, -1.f,
+                    0.f, -1.f, 0.f});
+            ConvolveOp cop = new ConvolveOp(kernel,
+                    ConvolveOp.EDGE_NO_OP,
+                    null);
+            modyfiedImage = cop.filter(modyfiedImage, null);
+
+            generateSchematic();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.sharpen")),
+                new Identifier("mtbe:textures/compose_schematic/sharpen.png"), 0, 0, iconWidth, iconHeight));
+
+        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
+            if (this.modyfiedImage == null) return;
+
+            // Deep copy of modyfiedImage
+            BufferedImage tmp = new BufferedImage(modyfiedImage.getWidth(), modyfiedImage.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics g = tmp.getGraphics();
+            g.drawImage(modyfiedImage, 0, 0, null);
+            g.dispose();
+
+            int w = tmp.getWidth();
+            int h = tmp.getHeight();
 
 
+            for (int x = 0; x < w; x++){
+                for (int y = 0; y < h; y++){
+                    int pixel = tmp.getRGB(x,y);
+                    Color col = new Color(pixel, true);
 
+                    if(col.getAlpha() == 0) continue;
+
+                    col = new Color(255 - col.getRed(),
+                            255 - col.getGreen(),
+                            255 - col.getBlue());
+                    tmp.setRGB(x, y, col.getRGB());
+                }
+            }
+
+            this.modyfiedImage = tmp;
+
+            generateSchematic();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.makeNegative")),
+                new Identifier("mtbe:textures/compose_schematic/negative.png"), 0, 0, iconWidth, iconHeight));
 
 
 
@@ -312,30 +426,15 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/apply_size.png"), 0, 0, iconWidth, iconHeight));
 
 
+
+
+
+
         // Right column
         xPos = this.width - 10 - iconWidth;
         yPos = 40;
         offset = 2;
 
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 0, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-            assert this.client != null;
-            this.client.openScreen(new ColorDefinitionTableScreen(this));
-        },
-            new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.goToSettings")),
-            new Identifier("mtbe:textures/compose_schematic/go_to_settings.png"), 0, 0, iconWidth, iconHeight));
-
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-            generateSchematic();
-        },
-                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.regenerateImage")),
-                new Identifier("mtbe:textures/compose_schematic/regenerate.png"), 0, 0, iconWidth, iconHeight));
-
-        this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
-            downloadImage();
-            generateSchematic();
-        },
-                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.redownloadImage")),
-                new Identifier("mtbe:textures/compose_schematic/redownload.png"), 0, 0, iconWidth, iconHeight));
 
 
 
