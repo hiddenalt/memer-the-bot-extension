@@ -76,7 +76,7 @@ public class TextInputDialogScreen extends Screen {
         this.input.setText(this.textFieldText.getString());
         this.addButton(this.input);
 
-        this.addButton(new ButtonWidget(this.width / 2 - 100, this.height - buttonOffset, 200, 20, this.doneButtonText, this::onProceed));
+        this.addButton(new ButtonWidget(this.width / 2 - 100, this.height / 2 - 20 / 2 + 20 + 5, 200, 20, this.doneButtonText, this::onProceed));
     }
 
     public void tick() {
@@ -102,8 +102,19 @@ public class TextInputDialogScreen extends Screen {
         int lineHeight = 10;
         int height = array.length * lineHeight;
 
+        int padding = 10 + 5;
+        int textHeight = 5;
+
+
         for (int i = 0; i < array.length; i++) {
-            drawCenteredString(matrices, this.textRenderer, array[i], this.width / 2, 15 + i * lineHeight, Color.white.getRGB());
+            drawCenteredString(
+                    matrices,
+                    this.textRenderer,
+                    array[i],
+                    this.width / 2,
+                    this.height/2 - padding - textHeight - height/2 + i * lineHeight,
+                    Color.yellow.getRGB()
+            );
         }
 
         // Input
