@@ -8,6 +8,8 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/hiddenalt/memer-the-bot-extension)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/hiddenalt/memer-the-bot-extension)
 ![GitHub contributors](https://img.shields.io/github/contributors-anon/hiddenalt/memer-the-bot-extension)
+![Wurst7-compatible](https://img.shields.io/badge/wurst7-compatible-success)
+![multiconnect-compatible](https://img.shields.io/badge/multiconnect-compatible-success)
 
 
 A mod to connect [Memer the Bot](https://github.com/hiddenalt/memer-the-bot) instances with Minecraft. Allows to automatically compose
