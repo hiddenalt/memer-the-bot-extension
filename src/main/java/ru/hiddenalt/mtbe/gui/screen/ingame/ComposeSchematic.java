@@ -598,9 +598,6 @@ public class ComposeSchematic extends Screen {
                     128
                 );
 
-
-//                drawCenteredText(matrices, this.textRenderer, Text.of("XYZ: "), this.width / 2, 15, 16777215);
-
                 break;
 
             case Schematic:
@@ -653,11 +650,6 @@ public class ComposeSchematic extends Screen {
                             );
                         }
                     }
-                    SchematicBlock block = new SchematicBlock(1);
-                    Block blockInstance = block.getBlockInstance();
-
-//                    assert this.client != null;
-//                    Identifier id = this.client.getBakedModelManager().getBlockModels().getModel(blockInstance.getDefaultState()).getSprite().getId();
                     break;
                 }
         }
@@ -679,43 +671,29 @@ public class ComposeSchematic extends Screen {
         }
 
         if(modyfiedImage != null){
-            drawCenteredText(
-                    matrices,
-                    this.textRenderer,
-                    Text.of("Starts here (left-bottom corner):"),
-                    Math.round((this.width / 2 - (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
-                    Math.round((this.height / 2 + (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY)),
-                    Color.white.getRGB()
-            );
 
-            drawCenteredText(
-                    matrices,
-                    this.textRenderer,
-                    Text.of("XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]"),
-                    Math.round((this.width / 2 - (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
-                    Math.round((this.height / 2 + (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY) + 15),
-                    Color.white.getRGB()
-            );
+            String[] strings = new String[]{
+                "Start = left-bottom corner",
+                "XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]",
+                "End = right-top corner",
+                "XYZ: ["+(this.x.getValue() + this.schematic.getWidth())+"; "+(this.y.getValue() + this.schematic.getHeight())+"; "+this.z.getValue()+"]",
+                ""
+            };
 
+            int startY = 30;
 
-            drawCenteredText(
-                    matrices,
-                    this.textRenderer,
-                    Text.of("Ends here (right-top corner):"),
-                    Math.round((this.width / 2 + (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
-                    Math.round((this.height / 2 - (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY)),
-                    Color.white.getRGB()
-            );
-
-            drawCenteredText(
-                    matrices,
-                    this.textRenderer,
-                    Text.of("XYZ: ["+(this.x.getValue() + this.schematic.getWidth())+"; "+(this.y.getValue() + this.schematic.getHeight())+"; "+this.z.getValue()+"]"),
-                    Math.round((this.width / 2 + (this.modyfiedImage.getWidth()) * (this.zoom) - offsetX)),
-                    Math.round((this.height / 2 -  (this.modyfiedImage.getHeight()) * (this.zoom) - offsetY) + 15),
-                    Color.white.getRGB()
-            );
-
+            for (int i = 0; i < strings.length; i++) {
+                String s = strings[i];
+                int width = this.textRenderer.getWidth(s);
+                drawCenteredText(
+                        matrices,
+                        this.textRenderer,
+                        Text.of(s),
+                        this.width - 5 - width / 2,
+                        startY + i * 10,
+                        Color.white.getRGB()
+                );
+            }
         }
 
 
@@ -723,7 +701,6 @@ public class ComposeSchematic extends Screen {
 
         this.widthField.renderButton(matrices, mouseX, mouseY, delta);
         this.heightField.renderButton(matrices, mouseX, mouseY, delta);
-
 
         drawCenteredText(matrices, this.textRenderer, Text.of("X:"), 7, this.height + 7 - 25 * 3, 16777215);
         drawCenteredText(matrices, this.textRenderer, Text.of("Y:"), 7, this.height + 7 - 25 * 2, 16777215);
