@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import ru.hiddenalt.mtbe.MemerTheBotExtensionMod;
 import ru.hiddenalt.mtbe.gui.screen.ingame.ActionsScreen;
 import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
 import ru.hiddenalt.mtbe.gui.ui.tooltip.SimpleTooltip;
@@ -23,7 +24,13 @@ public class GameMenuScreenMixin extends Screen {
     public void initWidgets(CallbackInfo ci){
         this.addButton(new ButtonWidgetTexturedFix(10, 10, 20, 20, Text.of(""), (buttonWidget) -> {
             assert this.client != null;
-            this.client.openScreen(new ActionsScreen(this));
+
+            ActionsScreen actionsScreen = MemerTheBotExtensionMod.getLastOpenedActionsScreen();
+            if(actionsScreen == null){
+                actionsScreen = new ActionsScreen(this);
+                MemerTheBotExtensionMod.setLastOpenedActionsScreen(actionsScreen);
+            }
+            this.client.openScreen(actionsScreen);
         },
             new SimpleTooltip(textRenderer, new TranslatableText("menu.tooltip")),
             new Identifier("mtbe:textures/icon-96.png"), 0, 0, 20, 20));

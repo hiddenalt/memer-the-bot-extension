@@ -31,6 +31,7 @@ public class ActionsScreen extends Screen {
     private int buttonOffset = 20 * 2;
     private int innerOffset = 25;
     private ButtonWidgetTexturedFix buildImage;
+    private ComposeSchematic lastScreen;
 
     public ActionsScreen(Screen parent) {
         super(new TranslatableText("actions.title"));
@@ -76,11 +77,24 @@ public class ActionsScreen extends Screen {
         // topButtonsOffset + innerOffset * 5 + 12
         buildImage = new ButtonWidgetTexturedFix(this.width / 2 + 100 - 20, topButtonsOffset + innerOffset * 4 + 12, 20, 20, Text.of(""), (buttonWidget) -> {
             assert this.client != null;
-            this.client.openScreen(new ComposeSchematic(this.client,this, this.customImageURLField.getText()));
+            this.lastScreen = new ComposeSchematic(this.client,this, this.customImageURLField.getText());
+            this.client.openScreen(this.lastScreen);
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("actions.build.image")),
                 new Identifier("mtbe:textures/open_file.png"), 0, 0, 20, 20);
         this.addButton(buildImage);
+
+
+        if(this.lastScreen != null) {
+            this.addButton(new ButtonWidgetTexturedFix(this.width / 2 - 100 - 25, topButtonsOffset + innerOffset * 4 + 12, 20, 20, Text.of(""), (buttonWidget) -> {
+                if(this.lastScreen == null) return;
+                assert this.client != null;
+                this.client.openScreen(this.lastScreen);
+            },
+                new SimpleTooltip(textRenderer, new TranslatableText("actions.build.reopenLastScreen")),
+                new Identifier("mtbe:textures/menu/reopen_last_screen.png"), 0, 0, 20, 20));
+        }
+
 
 
         // "Done" button
