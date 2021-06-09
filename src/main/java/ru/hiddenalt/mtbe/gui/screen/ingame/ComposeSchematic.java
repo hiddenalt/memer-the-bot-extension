@@ -119,7 +119,16 @@ public class ComposeSchematic extends Screen {
         }
     }
 
+    private Vec3d lastStartPos;
+
     protected void init(){
+
+
+        assert this.client != null;
+        assert this.client.player != null;
+
+        if(this.lastStartPos == null)
+            this.lastStartPos = this.client.player.getPos();
 
         this.closeButton = (ButtonWidget)this.addButton(new ButtonWidget(this.width - 25, 5, 20, 20, Text.of("X"), (button) -> {
             assert this.client != null;
@@ -500,12 +509,23 @@ public class ComposeSchematic extends Screen {
         }));
 
 
+        // Start cords + position grabber
+
+        this.addButton(new ButtonWidget(15, this.height - 25 * 4, 50, 20, new TranslatableText("composeSchematic.grabPlayerPosition"), (buttonWidget) -> {
+            assert this.client != null;
+            assert this.client.player != null;
+            Vec3d pos = this.client.player.getPos();
+            this.x.setValue((int) pos.x);
+            this.y.setValue((int) pos.y);
+            this.z.setValue((int) pos.z);
+        }));
+
         this.z = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 1, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.z.setValue((int) this.client.player.getZ());
+        this.z.setValue((int) this.lastStartPos.z);
         this.y = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 2, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.y.setValue((int) this.client.player.getY());
+        this.y.setValue((int) this.lastStartPos.y);
         this.x = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 3, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.x.setValue((int) this.client.player.getX());
+        this.x.setValue((int) this.lastStartPos.x);
 
         this.addButton(this.x);
         this.addButton(this.y);
