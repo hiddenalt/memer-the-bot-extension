@@ -3,7 +3,6 @@ package ru.hiddenalt.mtbe.gui.screen.ingame;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.utils.IPlayerContext;
-import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -15,22 +14,18 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import org.apache.commons.lang3.SerializationUtils;
 import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAs2DPNGScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveAsESchematicScreen;
 import ru.hiddenalt.mtbe.gui.screen.ingame.compose.SaveImageAsPNGScreen;
-import ru.hiddenalt.mtbe.gui.screen.options.ColorDefinitionTableScreen;
 import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
 import ru.hiddenalt.mtbe.gui.ui.NumberFieldWidget;
 import ru.hiddenalt.mtbe.gui.ui.tooltip.SimpleTooltip;
 import ru.hiddenalt.mtbe.process.BaritoneProcess;
 import ru.hiddenalt.mtbe.process.CommandProcess;
 import ru.hiddenalt.mtbe.process.ProcessManager;
-import ru.hiddenalt.mtbe.render.WorldRender;
 import ru.hiddenalt.mtbe.schematic.BufferedImageToSchematic;
 import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
@@ -38,7 +33,6 @@ import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
@@ -119,7 +113,7 @@ public class ComposeSchematic extends Screen {
         }
     }
 
-    private Vec3d lastStartPos;
+    private Vec3d startPos;
 
     protected void init(){
 
@@ -127,8 +121,8 @@ public class ComposeSchematic extends Screen {
         assert this.client != null;
         assert this.client.player != null;
 
-        if(this.lastStartPos == null)
-            this.lastStartPos = this.client.player.getPos();
+        if(this.startPos == null)
+            this.startPos = this.client.player.getPos();
 
         this.closeButton = (ButtonWidget)this.addButton(new ButtonWidget(this.width - 25, 5, 20, 20, Text.of("X"), (button) -> {
             assert this.client != null;
@@ -461,13 +455,12 @@ public class ComposeSchematic extends Screen {
                 IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
                 IPlayerContext player = bar.getPlayerContext();
-                Vec3d vec = player.playerFeetAsVec();
 
                 // Open generated schematic and build!
                 File file = new File(new File(MinecraftClient.getInstance().runDirectory, "schematics"), this.schematic.getTempFilename() + ".eschematic");
                 ExtendedMCEditSchematic schematic = new ExtendedMCEditSchematic(Objects.requireNonNull(NbtIo.readCompressed(file)));
 
-                BaritoneProcess p = new BaritoneProcess(schematic, vec);
+                BaritoneProcess p = new BaritoneProcess(schematic, this.startPos);
                 ProcessManager.pushAndStart(p);
 
                 assert this.client != null;
@@ -485,17 +478,9 @@ public class ComposeSchematic extends Screen {
 
             try {
                 this.schematic.saveAsTemp();
-
                 IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
-                IPlayerContext player = bar.getPlayerContext();
-                Vec3d vec = new Vec3d(this.x.getValue(), this.y.getValue(), this.z.getValue());
-
-
-                // TODO: build with cmd!
-                // Open generated schematic and build!
-
-                CommandProcess commandBuilder = new CommandProcess(this.schematic, 50, "/setblock %X% %Y% %Z% %BLOCK_ID%", vec);
+                CommandProcess commandBuilder = new CommandProcess(this.schematic, 50, "/setblock %X% %Y% %Z% %BLOCK_ID%", this.startPos);
                 ProcessManager.pushAndStart(commandBuilder);
 
                 assert this.client != null;
@@ -521,11 +506,16 @@ public class ComposeSchematic extends Screen {
         }));
 
         this.z = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 1, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.z.setValue((int) this.lastStartPos.z);
+        this.z.setValue((int) this.startPos.z);
+        this.z.setChangedListener(this::positionChanged);
+
         this.y = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 2, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.y.setValue((int) this.lastStartPos.y);
+        this.y.setValue((int) this.startPos.y);
+        this.y.setChangedListener(this::positionChanged);
+
         this.x = new NumberFieldWidget(textRenderer, 15, this.height - 25 * 3, 50, 20, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        this.x.setValue((int) this.lastStartPos.x);
+        this.x.setValue((int) this.startPos.x);
+        this.x.setChangedListener(this::positionChanged);
 
         this.addButton(this.x);
         this.addButton(this.y);
@@ -541,6 +531,10 @@ public class ComposeSchematic extends Screen {
             downloadImage();
             generateSchematic();
         }
+    }
+
+    public void positionChanged(String s){
+        this.startPos = new Vec3d(this.x.getValue(), this.y.getValue(), this.z.getValue());
     }
 
     public void filesDragged(List<Path> paths) {
@@ -693,10 +687,10 @@ public class ComposeSchematic extends Screen {
         if(modyfiedImage != null){
 
             String[] strings = new String[]{
-                "Start = left-bottom corner",
+                "Start = right-bottom corner",
                 "XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]",
-                "End = right-top corner",
-                "XYZ: ["+(this.x.getValue() + this.schematic.getWidth())+"; "+(this.y.getValue() + this.schematic.getHeight())+"; "+this.z.getValue()+"]",
+                "End = left-top corner",
+                "XYZ: ["+(this.x.getValue() + this.schematic.getWidth() - 1)+"; "+(this.y.getValue() + this.schematic.getHeight() - 1)+"; "+(this.z.getValue()+ this.schematic.getLength() - 1)+"]",
                 ""
             };
 

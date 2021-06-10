@@ -74,7 +74,7 @@ public class CommandProcess extends Process {
                             String sendToChat = this.cmd
                                     .replaceAll("%X%", ""+ ((long)(this.startPos.x) + x))
                                     .replaceAll("%Y%", ""+ ((long)(this.startPos.y) + y))
-                                    .replaceAll("%Z%", ""+ ((long)(this.startPos.z) + z))
+                                    .replaceAll("%Z%", ""+ ((long)(this.startPos.z) + z - 1))
                                     .replaceAll("%NAMESPACE%", ""+namespace)
                                     .replaceAll("%PATH%", ""+path)
                                     .replaceAll("%BLOCK_ID%", ""+fullID)

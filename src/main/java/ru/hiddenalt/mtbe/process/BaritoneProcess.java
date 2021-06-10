@@ -65,6 +65,6 @@ public class BaritoneProcess extends Process {
     public void start() {
         IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
         BaritoneAPI.getSettings().mapArtMode.value = true;
-        bar.getBuilderProcess().build("schematic", schematic, new BlockPos(startPos.x,startPos.y,startPos.z));
+        bar.getBuilderProcess().build("schematic", schematic, new BlockPos(startPos.x,startPos.y,startPos.z-1));
     }
 }
