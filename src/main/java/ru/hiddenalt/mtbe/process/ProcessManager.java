@@ -3,6 +3,7 @@ package ru.hiddenalt.mtbe.process;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class ProcessManager {
 
@@ -32,9 +33,7 @@ public class ProcessManager {
     }
 
     public static void remove(Process p){
-        System.out.println(p.getPid());
-        System.out.println(processes);
-        processes.remove(p.getPid());
+        processes.remove(p);
     }
 
     public static ArrayList<Process> getAll(){
@@ -42,7 +41,9 @@ public class ProcessManager {
     }
 
     public static void removeAll(){
-        for(Process p : processes) {
+        ArrayList<Process> _processes = new ArrayList<>(processes);
+
+        for(Process p : _processes) {
             p.cancel();
             processes.remove(p);
         }
@@ -53,8 +54,11 @@ public class ProcessManager {
             p.start();
     }
 
+
     public static void cancelAll(){
-        for(Process p : processes)
+        ArrayList<Process> _processes = new ArrayList<>(processes);
+
+        for(Process p : _processes)
             p.cancel();
 
     }

@@ -94,11 +94,15 @@ public class CommandProcess extends Process {
 
     @Override
     public void cancel() {
-        System.out.println("cancel!");
         ProcessManager.remove(this);
-        thread.interrupt();
-        thread.stop();
-        thread = null;
+        this.isActive = false;
+        this.isPaused = false;
+        if(thread != null){
+            thread.interrupt();
+            thread.stop();
+            thread = null;
+        }
+
     }
 
     @Override
@@ -121,8 +125,53 @@ public class CommandProcess extends Process {
         return this.getType()+" (w="+schematic.getWidth()+",h="+schematic.getHeight()+",l="+schematic.getLength()+")";
     }
 
+    public Schematic getSchematic() {
+        return schematic;
+    }
+
+    public void setSchematic(Schematic schematic) {
+        this.schematic = schematic;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
+    public void setDelay(int delay) {
+        this.delay = delay;
+    }
+
+    public String getCmd() {
+        return cmd;
+    }
+
+    public void setCmd(String cmd) {
+        this.cmd = cmd;
+    }
+
+    public int getCommandPerIteration() {
+        return commandPerIteration;
+    }
+
+    public void setCommandPerIteration(int commandPerIteration) {
+        this.commandPerIteration = commandPerIteration;
+    }
+
     @Override
-    public void start() {
-        this.thread.start();
+    public void start(){
+        super.start();
+        if(this.thread != null){
+            this.isActive = true;
+            this.isPaused = false;
+            this.thread.start();
+        }
+    }
+
+    public Vec3d getStartPos() {
+        return startPos;
+    }
+
+    public void setStartPos(Vec3d startPos) {
+        this.startPos = startPos;
     }
 }

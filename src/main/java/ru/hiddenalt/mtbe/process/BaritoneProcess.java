@@ -4,9 +4,18 @@ package ru.hiddenalt.mtbe.process;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.schematic.FillSchematic;
+import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.registry.Registry;
 import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
+import ru.hiddenalt.mtbe.schematic.Schematic;
+import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 
 public class BaritoneProcess extends Process {
 
@@ -36,18 +45,27 @@ public class BaritoneProcess extends Process {
 
     @Override
     public void cancel() {
-        // TODO: make 100% cancel method
-        this.pause();
+        IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+        bar.getBuilderProcess().build("",
+                new FillSchematic(0,0,0, Registry.BLOCK.get(new Identifier("minecraft:air")).getDefaultState()),
+                new Vec3i(0,0,0)
+        );
+        bar.getBuilderProcess().pause();
+        this.isActive = false;
         ProcessManager.remove(this);
     }
 
     @Override
     public void pause() {
+        if(!this.isActive) return;
+        this.isPaused = true;
         BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().pause();
     }
 
     @Override
     public void resume() {
+        if(!this.isActive) return;
+        this.isPaused = false;
         BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().resume();
     }
 
@@ -63,8 +81,23 @@ public class BaritoneProcess extends Process {
 
     @Override
     public void start() {
+        super.start();
         IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+
+        if(!bar.getBuilderProcess().isPaused()){
+            this.isActive = false;
+            this.isPaused = true;
+
+            if(MinecraftClient.getInstance().player != null)
+                MinecraftClient.getInstance().player.
+                        sendMessage(Text.of("Primary Baritone process is busy!"), false);
+            return;
+        }
         BaritoneAPI.getSettings().mapArtMode.value = true;
+
+        this.isActive = true;
+        this.isPaused = false;
+
         bar.getBuilderProcess().build("schematic", schematic, new BlockPos(startPos.x,startPos.y,startPos.z-1));
     }
 }

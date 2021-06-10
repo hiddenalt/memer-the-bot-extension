@@ -20,7 +20,9 @@ public class HUD {
 
 //        minecraftClient.gameRenderer.getCamera().
 
-        ArrayList<Process> processes = ProcessManager.getAll();
+        ArrayList<Process> processes = new ArrayList<>(ProcessManager.getAll());
+        processes.removeIf(p -> !p.isActive() || p.isPaused());
+
         if(processes.size() > 0) {
             tm.bindTexture(new Identifier("mtbe:textures/builder_icon.png"));
             DrawableHelper.drawTexture(matrices, 10, 10, 0, 0, 32, 32, 32, 32);

@@ -16,7 +16,9 @@ public abstract class Process {
     protected boolean isActive = false;
     protected boolean isPaused = false;
 
-    abstract public void start();
+    public void start(){
+        if(!ProcessManager.getAll().contains(this)) return;
+    }
     abstract public void cancel();
     abstract public void pause();
     abstract public void resume();
@@ -31,5 +33,13 @@ public abstract class Process {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
     }
 }
