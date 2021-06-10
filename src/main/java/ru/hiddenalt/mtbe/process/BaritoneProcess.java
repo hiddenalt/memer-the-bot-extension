@@ -46,10 +46,10 @@ public class BaritoneProcess extends Process {
     @Override
     public void cancel() {
         IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
-        bar.getBuilderProcess().build("",
-                new FillSchematic(0,0,0, Registry.BLOCK.get(new Identifier("minecraft:air")).getDefaultState()),
-                new Vec3i(0,0,0)
-        );
+//        bar.getBuilderProcess().build("",
+//                new FillSchematic(0,0,0, Registry.BLOCK.get(new Identifier("minecraft:air")).getDefaultState()),
+//                new Vec3i(0,0,0)
+//        );
         bar.getBuilderProcess().pause();
         this.isActive = false;
         ProcessManager.remove(this);
@@ -83,16 +83,6 @@ public class BaritoneProcess extends Process {
     public void start() {
         super.start();
         IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
-
-        if(!bar.getBuilderProcess().isPaused()){
-            this.isActive = false;
-            this.isPaused = true;
-
-            if(MinecraftClient.getInstance().player != null)
-                MinecraftClient.getInstance().player.
-                        sendMessage(Text.of("Primary Baritone process is busy!"), false);
-            return;
-        }
         BaritoneAPI.getSettings().mapArtMode.value = true;
 
         this.isActive = true;
