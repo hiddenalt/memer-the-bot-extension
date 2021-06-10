@@ -2,6 +2,7 @@ package ru.hiddenalt.mtbe.gui.screen.ingame;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,6 +15,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.imgscalr.Scalr;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
@@ -30,6 +32,7 @@ import ru.hiddenalt.mtbe.schematic.BufferedImageToSchematic;
 import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
 import ru.hiddenalt.mtbe.schematic.SchematicBlock;
+import ru.hiddenalt.mtbe.settings.SchematicDimension;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -69,6 +72,10 @@ public class ComposeSchematic extends Screen {
     private ButtonWidgetTexturedFix layerSwitcher;
 
 
+    private ButtonWidget dimensionSwitchButton;
+    private SchematicDimension dimension = SchematicDimension.XY;
+
+
     public ComposeSchematic(MinecraftClient client, Screen parent, String url) {
         super(new TranslatableText("compose.title"));
         this.parent = parent;
@@ -97,6 +104,7 @@ public class ComposeSchematic extends Screen {
             if(modyfiedImage == null) return;
 
             BufferedImageToSchematic generator = new BufferedImageToSchematic(modyfiedImage);
+            generator.setSchematicDimension(this.dimension);
 
 //            if(imageWidth != -1 && imageHeight != -1)
 //                generator.setCustomImageSize(imageWidth, imageHeight);
@@ -128,6 +136,8 @@ public class ComposeSchematic extends Screen {
             assert this.client != null;
             this.client.openScreen(this.parent);
         }));
+
+
 
         // EDITOR BUTTONS:
 
@@ -204,7 +214,7 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/center.png"), 0, 0, iconWidth, iconHeight));
 
 
-        /*
+
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 8, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
 
@@ -213,13 +223,23 @@ public class ComposeSchematic extends Screen {
 
 //            WorldRender.showPreview(this.schematic, new BlockPos(vec.x, vec.y, vec.z));
 
-            assert this.client != null;
-            this.client.openScreen((Screen)null);
-            this.client.mouse.lockCursor();
+            int x1 = this.x.getValue();
+            int y1 = this.y.getValue();
+            int z1 = this.z.getValue() - 1; // needs for some reason
+
+            int x2 = this.x.getValue() + this.schematic.getWidth() - 1;
+            int y2 = this.y.getValue() + this.schematic.getHeight() - 1;
+            int z2 = this.z.getValue() + this.schematic.getLength() - 2;
+
+            bar.getSelectionManager().removeAllSelections();
+            bar.getSelectionManager().addSelection(
+                    BetterBlockPos.from(new BlockPos(x1, y1, z1)),
+                    BetterBlockPos.from(new BlockPos(x2, y2, z2))
+            );
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.showPreview")),
                 new Identifier("mtbe:textures/compose_schematic/preview.png"), 0, 0, iconWidth, iconHeight));
-        */
+
 
 
 
@@ -523,7 +543,22 @@ public class ComposeSchematic extends Screen {
 
 
 
+        this.dimensionSwitchButton = this.addButton(new ButtonWidget(this.width - 25 - 60 - 5, 5, 60, 20, Text.of("Dimension"), (button) -> {
+            switch(this.dimension){
+                case XY:
+                    this.dimension = SchematicDimension.XZ;
+                    break;
 
+                case XZ:
+                    this.dimension = SchematicDimension.ZY;
+                    break;
+
+                case ZY:
+                    this.dimension = SchematicDimension.XY;
+                    break;
+            }
+            generateSchematic();
+        }));
 
 
 
@@ -671,7 +706,7 @@ public class ComposeSchematic extends Screen {
 
 
         if(schematic != null) {
-            int blocksCount = this.schematic.getWidth() * this.schematic.getHeight();
+            int blocksCount = this.schematic.getWidth() * this.schematic.getHeight() * this.schematic.getLength();
 
             drawCenteredText(
                     matrices,
@@ -684,14 +719,15 @@ public class ComposeSchematic extends Screen {
 
         }
 
-        if(modyfiedImage != null){
+        if(modyfiedImage != null && this.schematic != null){
 
             String[] strings = new String[]{
-                "Start = right-bottom corner",
+                "Start = left-bottom corner",
                 "XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]",
-                "End = left-top corner",
-                "XYZ: ["+(this.x.getValue() + this.schematic.getWidth() - 1)+"; "+(this.y.getValue() + this.schematic.getHeight() - 1)+"; "+(this.z.getValue()+ this.schematic.getLength() - 1)+"]",
-                ""
+                "End = right-top corner",
+                "XYZ: ["+(this.x.getValue() + this.schematic.getWidth() - 1)+"; "+(this.y.getValue() + this.schematic.getHeight() - 1)+"; "+(this.z.getValue() + this.schematic.getLength() - 1)+"]",
+                "",
+                "Direction: "+this.dimension.name()
             };
 
             int startY = 30;

@@ -83,7 +83,7 @@ public class CommandProcess extends Process {
                             assert MinecraftClient.getInstance().player != null;
                             MinecraftClient.getInstance().player.sendChatMessage(sendToChat);
                         } catch (InterruptedException | NullPointerException e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
                     }
                 }

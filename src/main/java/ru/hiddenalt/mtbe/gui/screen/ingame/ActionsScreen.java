@@ -1,5 +1,9 @@
 package ru.hiddenalt.mtbe.gui.screen.ingame;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.IPlayerContext;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,6 +22,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +65,14 @@ public class ActionsScreen extends Screen {
     }
 
     protected void init() {
+
+        // Stop preview
+        this.addButton(new ButtonWidgetTexturedFix(this.width - 5 - 20, 5, 20, 20, Text.of(""), (buttonWidget) -> {
+            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+            bar.getSelectionManager().removeAllSelections();
+        },
+                new SimpleTooltip(textRenderer, new TranslatableText("actions.stopPreview")),
+                new Identifier("mtbe:textures/actions_screen/stop_preview.png"), 0, 0, 20, 20));
 
         this.processesTableWidget = new ActionsScreen.ProcessesTableWidget(this.client, this);
         this.children.add(this.processesTableWidget);

@@ -8,11 +8,11 @@ import java.util.HashMap;
 public class SettingsEntity implements Serializable {
     protected String mount = "";
     protected HashMap<Color, String> colormap = new HashMap();
-    protected SchematicAlign schematicAlign;
+    protected SchematicDimension schematicDimension;
     protected ArrayList<Integer> bankIds;
 
     public SettingsEntity() {
-        this.schematicAlign = SchematicAlign.VERTICAL;
+        this.schematicDimension = SchematicDimension.XY;
         this.bankIds = new ArrayList();
     }
 
@@ -32,12 +32,12 @@ public class SettingsEntity implements Serializable {
         this.colormap = colormap;
     }
 
-    public SchematicAlign getSchematicAlign() {
-        return this.schematicAlign;
+    public SchematicDimension getSchematicDimension() {
+        return this.schematicDimension;
     }
 
-    public void setSchematicAlign(SchematicAlign schematicAlign) {
-        this.schematicAlign = schematicAlign;
+    public void setSchematicDimension(SchematicDimension schematicDimension) {
+        this.schematicDimension = schematicDimension;
     }
 
     public ArrayList<Integer> getBankIds() {

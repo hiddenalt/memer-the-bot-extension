@@ -15,7 +15,7 @@ public class SettingsEntityAdapter implements JsonSerializer<SettingsEntity>, Js
         JsonObject result = new JsonObject();
 
         result.addProperty("mount",             src.getMount());
-        result.addProperty("schematicAlign",    src.getSchematicAlign().toString());
+        result.addProperty("schematicAlign",    src.getSchematicDimension().toString());
 
 
         JsonObject colormap = new JsonObject();
@@ -59,7 +59,7 @@ public class SettingsEntityAdapter implements JsonSerializer<SettingsEntity>, Js
                 result.setMount(jsonObject.get("mount").getAsString());
 
             if (jsonObject.has("schematicAlign"))
-                result.setSchematicAlign(SchematicAlign.valueOf(jsonObject.get("schematicAlign").getAsString()));
+                result.setSchematicDimension(SchematicDimension.valueOf(jsonObject.get("schematicAlign").getAsString()));
 
             if(jsonObject.has("colormap")){
                 HashMap<Color, String> colormap = new HashMap<>();

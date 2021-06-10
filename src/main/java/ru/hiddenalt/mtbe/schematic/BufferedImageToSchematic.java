@@ -9,17 +9,17 @@ import java.util.Map.Entry;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.imgscalr.Scalr;
-import ru.hiddenalt.mtbe.settings.SchematicAlign;
+import ru.hiddenalt.mtbe.settings.SchematicDimension;
 import ru.hiddenalt.mtbe.settings.SettingsEntity;
 import ru.hiddenalt.mtbe.settings.SettingsManager;
 
 public class BufferedImageToSchematic {
     private BufferedImage image;
     private Schematic schematic;
-    protected SchematicAlign schematicAlign;
+    protected SchematicDimension schematicDimension;
 
     public BufferedImageToSchematic(BufferedImage image) {
-        this.schematicAlign = SchematicAlign.VERTICAL;
+        this.schematicDimension = SchematicDimension.XY;
         this.image = image;
     }
 
@@ -27,14 +27,26 @@ public class BufferedImageToSchematic {
         this.image = Scalr.resize(this.image, width, height, new BufferedImageOp[0]);
     }
 
+    public SchematicDimension getSchematicDimension() {
+        return schematicDimension;
+    }
+
+    public void setSchematicDimension(SchematicDimension schematicDimension) {
+        this.schematicDimension = schematicDimension;
+    }
+
     public Schematic generateSchematic() throws Exception {
         Schematic schematic = new Schematic();
-        switch(this.schematicAlign) {
-            case VERTICAL:
+        switch(this.schematicDimension) {
+            case XY:
                 schematic.setSize(this.image.getWidth(), this.image.getHeight(), 1);
                 break;
-            case HORIZONTAL:
+            case XZ:
                 schematic.setSize(this.image.getWidth(), 1, this.image.getHeight());
+                break;
+            case ZY:
+                schematic.setSize(1, this.image.getHeight(), this.image.getWidth());
+                break;
         }
 
         BufferedImage temp = this.image;
@@ -45,12 +57,19 @@ public class BufferedImageToSchematic {
             for(int y = 0; y < temp.getHeight(); ++y) {
                 Color pixel = new Color(temp.getRGB(x, y), true);
                 SchematicBlock block = getSuitableBlockFromColor(pixel);
-                switch(this.schematicAlign) {
-                    case VERTICAL:
+                switch(this.schematicDimension) {
+                    case XY:
                         block.setPos(x, y, 0);
                         break;
-                    case HORIZONTAL:
-                        block.setPos(x, 0, y);
+                    case XZ:
+                        block.setPos(temp.getWidth() - x - 1, 0, temp.getHeight() - y - 1);
+//                        block.setPos(temp.getWidth() - x - 1, 0, y);
+//                        block.setPos(x, 0, temp.getHeight() - y - 1);
+//                        block.setPos(x, 0, y);
+                        break;
+                    case ZY:
+                        block.setPos(0, y, x);
+                        break;
                 }
 
                 schematic.insertBlock(block);
