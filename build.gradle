@@ -2,6 +2,8 @@ plugins {
 	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
 	id "com.apollographql.apollo" version "2.5.3"
+	id 'com.github.johnrengelman.shadow' version '6.1.0'
+	id 'java'
 }
 repositories {
 	jcenter()
@@ -13,6 +15,10 @@ repositories {
 	maven {
 		name = "impactdevelopment-repo"
 		url = uri("https://impactdevelopment.github.io/maven/")
+	}
+	maven {
+		name = 'spongepowered-repo'
+		url = 'https://repo.spongepowered.org/repository/maven-public/'
 	}
 	maven {
 		name = "Fabric"
@@ -34,6 +40,9 @@ version = project.mod_version
 group = project.maven_group
 
 dependencies {
+	shadow localGroovy()
+	shadow gradleApi()
+
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -44,14 +53,6 @@ dependencies {
 
 	// Offline compiled Fabritone for Minecraft 1.16.4
 	implementation name: 'baritone-1.6.2-dev'
-
-//	modImplementation "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
-//	include "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
-
-//	modImplementation 'com.gitlab.CDAGaming:fabritone:fabric~1.16.4-8d2e65c14d-1'
-//	modImplementation 'com.gitlab.CDAGaming:fabritone:fabric~1.16.x-SNAPSHOT'
-	//modImplementation 'org.kitteh.irc:client-lib:7.3.0'
-//	include 'com.gitlab.CDAGaming:fabritone:fabric~1.16.4-8d2e65c14d-1'
 
 	// https://mvnrepository.com/artifact/com.flowpowered/flow-nbt
 	compile group: 'com.flowpowered', name: 'flow-nbt', version: '1.0.0'
@@ -67,6 +68,43 @@ dependencies {
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
+
+//task relocateShadowJar(type: ConfigureShadowRelocation) {
+//	target = tasks.shadowJar
+//}
+//tasks.shadowJar.dependsOn tasks.relocateShadowJar
+shadowJar {
+//	input = file("${project.buildDir}/libs/$archivesBaseName-$version-dev.jar")
+//	dependsOn("remapJar")
+//	input = file("${project.buildDir}/libs/mtbe-0.0.4.jar")
+	dependencies {
+		include(dependency('org.spongepowered:mixin'))
+        include(dependency('com.apollographql.apollo:2.5.3')) // makes no sense?
+        include(dependency('com.apollographql.apollo:apollo-api-jvm:2.5.3'))
+        include(dependency('com.apollographql.apollo:apollo-http-cache-api:2.5.3'))
+        include(dependency('com.apollographql.apollo:apollo-normalized-cache-api-jvm:2.5.3'))
+        include(dependency('com.apollographql.apollo:apollo-normalized-cache-jvm:2.5.3'))
+        include(dependency('com.apollographql.apollo:apollo-runtime:2.5.3'))
+        include(dependency('com.squareup.okhttp3:okhttp:3.12.11'))
+        include(dependency('com.squareup.okio:okio:2.9.0'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib:1.4.10'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-common:1.4.10'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'))
+		include(dependency(name: 'baritone-1.6.2-dev'))
+		include(dependency('com.flowpowered:flow-nbt:1.0.0'))
+		include(dependency('org.imgscalr:imgscalr-lib:4.2'))
+//		include 'build/generated/source/apollo/main/service/*'
+	}
+
+}
+
+remapJar {
+	input = file("${project.buildDir}/libs/mtbe-0.0.4-all.jar")
+	archiveName = "${archivesBaseName}-${version}-remap.jar"
+}
+
+// Run shadowJar first and remapJar second to build mod with all dependencies
 
 processResources {
 	inputs.property "version", project.version
@@ -115,6 +153,9 @@ publishing {
 			}
 			artifact(sourcesJar) {
 				builtBy remapSourcesJar
+			}
+			artifact(shadowJar){
+				builtBy shadowJar
 			}
 		}
 	}
