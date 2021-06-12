@@ -42,7 +42,6 @@ group = project.maven_group
 dependencies {
 	shadow localGroovy()
 	shadow gradleApi()
-
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -72,8 +71,9 @@ dependencies {
 shadowJar {
 	archiveFileName = "${archivesBaseName}-${version}-all.${extension}"
 
-
-
+//	filesMatching("src/main/resources/fabric.mod.json") {
+//		expand "mixins": ["mixins.baritone.json"]
+//	}
 	dependencies {
 		include(dependency('org.spongepowered:mixin'))
 		include(dependency('com.apollographql.apollo:2.5.3')) // makes no sense?
@@ -88,21 +88,25 @@ shadowJar {
 		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-common:1.4.10'))
 		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10'))
 		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'))
-//		include(dependency(name: 'baritone-1.6.2-remapped')) // no sense
-		include(dependency('com.flowpowered:flow-nbt:1.0.0'))
 		include(dependency('org.imgscalr:imgscalr-lib:4.2'))
+		include(dependency('com.flowpowered:flow-nbt:1.0.0'))
 
-		include(dependency(name: 'com.google.code.findbugs:jsr305:3.0.2'))
-		include(dependency(name: 'com.github.ImpactDevelopment:SimpleTweaker:1.2'))
-		include(dependency(name: 'net.sf.jopt-simple:jopt-simple:5.0.3'))
-		include(dependency(name: 'baritone-1.6.2-dev.jar'))
+//		include(dependency(name: 'com.google.code.findbugs:jsr305:3.0.2'))
+//		include(dependency(name: 'com.github.ImpactDevelopment:SimpleTweaker:1.2'))
+//		include(dependency(name: 'net.sf.jopt-simple:jopt-simple:5.0.3'))
+//		include('libs/baritone-1.6.2.jar')
+//		include(dependency(name: 'baritone-1.6.2-remapped')) // no sense
+//
 	}
+
+
 
 }
 
 remapJar {
+
 	input = file("${project.buildDir}/libs/${archivesBaseName}-${version}-all.${extension}")
-	archiveName = "${archivesBaseName}-${version}-standalone.${extension}"
+	archiveName = "${archivesBaseName}-${version}-standalone-without-fabritone.${extension}"
 }
 
 // Use buildMod to build
@@ -111,10 +115,6 @@ tasks.register('buildMod') {
 	dependsOn 'remapJar'
 	tasks.findByName('remapJar').mustRunAfter 'shadowJar'
 }
-
-
-
-// Run shadowJar first and remapJar second to build mod with all dependencies
 
 processResources {
 	inputs.property "version", project.version
