@@ -69,40 +69,50 @@ dependencies {
 	// You may need to force-disable transitiveness on them.
 }
 
-//task relocateShadowJar(type: ConfigureShadowRelocation) {
-//	target = tasks.shadowJar
-//}
-//tasks.shadowJar.dependsOn tasks.relocateShadowJar
 shadowJar {
-//	input = file("${project.buildDir}/libs/$archivesBaseName-$version-dev.jar")
-//	dependsOn("remapJar")
-//	input = file("${project.buildDir}/libs/mtbe-0.0.4.jar")
+	archiveFileName = "${archivesBaseName}-${version}-all.${extension}"
+
+
+
 	dependencies {
 		include(dependency('org.spongepowered:mixin'))
-        include(dependency('com.apollographql.apollo:2.5.3')) // makes no sense?
-        include(dependency('com.apollographql.apollo:apollo-api-jvm:2.5.3'))
-        include(dependency('com.apollographql.apollo:apollo-http-cache-api:2.5.3'))
-        include(dependency('com.apollographql.apollo:apollo-normalized-cache-api-jvm:2.5.3'))
-        include(dependency('com.apollographql.apollo:apollo-normalized-cache-jvm:2.5.3'))
-        include(dependency('com.apollographql.apollo:apollo-runtime:2.5.3'))
-        include(dependency('com.squareup.okhttp3:okhttp:3.12.11'))
-        include(dependency('com.squareup.okio:okio:2.9.0'))
-        include(dependency('org.jetbrains.kotlin:kotlin-stdlib:1.4.10'))
-        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-common:1.4.10'))
-        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10'))
-        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'))
-		include(dependency(name: 'baritone-1.6.2-dev'))
+		include(dependency('com.apollographql.apollo:2.5.3')) // makes no sense?
+		include(dependency('com.apollographql.apollo:apollo-api-jvm:2.5.3'))
+		include(dependency('com.apollographql.apollo:apollo-http-cache-api:2.5.3'))
+		include(dependency('com.apollographql.apollo:apollo-normalized-cache-api-jvm:2.5.3'))
+		include(dependency('com.apollographql.apollo:apollo-normalized-cache-jvm:2.5.3'))
+		include(dependency('com.apollographql.apollo:apollo-runtime:2.5.3'))
+		include(dependency('com.squareup.okhttp3:okhttp:3.12.11'))
+		include(dependency('com.squareup.okio:okio:2.9.0'))
+		include(dependency('org.jetbrains.kotlin:kotlin-stdlib:1.4.10'))
+		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-common:1.4.10'))
+		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10'))
+		include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'))
+//		include(dependency(name: 'baritone-1.6.2-remapped')) // no sense
 		include(dependency('com.flowpowered:flow-nbt:1.0.0'))
 		include(dependency('org.imgscalr:imgscalr-lib:4.2'))
-//		include 'build/generated/source/apollo/main/service/*'
+
+		include(dependency(name: 'com.google.code.findbugs:jsr305:3.0.2'))
+		include(dependency(name: 'com.github.ImpactDevelopment:SimpleTweaker:1.2'))
+		include(dependency(name: 'net.sf.jopt-simple:jopt-simple:5.0.3'))
+		include(dependency(name: 'baritone-1.6.2-dev.jar'))
 	}
 
 }
 
 remapJar {
-	input = file("${project.buildDir}/libs/mtbe-0.0.4-all.jar")
-	archiveName = "${archivesBaseName}-${version}-remap.jar"
+	input = file("${project.buildDir}/libs/${archivesBaseName}-${version}-all.${extension}")
+	archiveName = "${archivesBaseName}-${version}-standalone.${extension}"
 }
+
+// Use buildMod to build
+tasks.register('buildMod') {
+	dependsOn 'shadowJar'
+	dependsOn 'remapJar'
+	tasks.findByName('remapJar').mustRunAfter 'shadowJar'
+}
+
+
 
 // Run shadowJar first and remapJar second to build mod with all dependencies
 
