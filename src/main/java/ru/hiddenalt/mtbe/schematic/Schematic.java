@@ -22,7 +22,7 @@ public class Schematic {
     protected int width = 0;
     protected int height = 0;
     protected int length = 0;
-    protected String tempName = "generated";
+    protected String tempName = "generatedSchematic.temp";
 
     public Schematic() {
         this.setSize(1, 1, 1);
@@ -33,7 +33,7 @@ public class Schematic {
     }
 
     public String getTempFilename() {
-        return SettingsManager.getSettings() + this.tempName;
+        return this.tempName;
     }
 
     public void fillWith(SchematicBlock block) {
@@ -142,7 +142,8 @@ public class Schematic {
         stream.close();
     }
 
-    public void saveAs2DPNG(String filename) throws IOException{
+    public void saveAs2DPNG(String filename) throws IOException {
+        File file = new File(SettingsManager.getExportedPNGFolder() + filename);
         int w = this.getWidth();
         int h = this.getHeight();
         int l = this.getLength();
@@ -196,7 +197,7 @@ public class Schematic {
 
         g2d.dispose();
 
-        File file = new File(SettingsManager.getExportedPNGFolder() + filename);
+
         ImageIO.write(bufferedImage, "png", file);
     }
 

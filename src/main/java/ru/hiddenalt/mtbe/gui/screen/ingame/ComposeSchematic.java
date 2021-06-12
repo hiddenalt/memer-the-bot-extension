@@ -37,6 +37,7 @@ import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
 import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 import ru.hiddenalt.mtbe.settings.SchematicDimension;
+import ru.hiddenalt.mtbe.settings.SettingsManager;
 import ru.hiddenalt.mtbe.utils.BufferedImageManipulator;
 
 import javax.imageio.ImageIO;
@@ -125,29 +126,29 @@ public class ComposeSchematic extends Screen {
         this.addButton(this.heightField);
 
         this.addButton(
-                new ButtonWidgetTexturedFix(
-                        xPos + fieldsWidth + fieldsInnerOffset + fieldsWidth + fieldsInnerOffset,
-                        yPos,
-                        iconWidth,
-                        iconHeight,
-                        Text.of(""),
-                        (buttonWidget) -> {
-                            modifiedImage = Scalr.resize(
-                                    this.modifiedImage,
-                                    Scalr.Method.QUALITY,
-                                    Scalr.Mode.FIT_EXACT,
-                                    this.widthField.getValue(),
-                                    this.heightField.getValue()
-                            );
-                            generateSchematic();
-                        },
-                        new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.applySize")),
-                        new Identifier("mtbe:textures/compose_schematic/apply_size.png"),
-                        0,
-                        0,
-                        iconWidth,
-                        iconHeight
-                )
+            new ButtonWidgetTexturedFix(
+                xPos + fieldsWidth + fieldsInnerOffset + fieldsWidth + fieldsInnerOffset,
+                yPos,
+                iconWidth,
+                iconHeight,
+                Text.of(""),
+                (buttonWidget) -> {
+                    modifiedImage = Scalr.resize(
+                        this.modifiedImage,
+                        Scalr.Method.QUALITY,
+                        Scalr.Mode.FIT_EXACT,
+                        this.widthField.getValue(),
+                        this.heightField.getValue()
+                    );
+                    generateSchematic();
+                },
+                new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.applySize")),
+                new Identifier("mtbe:textures/compose_schematic/apply_size.png"),
+                0,
+                0,
+                iconWidth,
+                iconHeight
+            )
         );
 
         // -----------------------
@@ -157,7 +158,10 @@ public class ComposeSchematic extends Screen {
             try {
                 this.schematic.saveAsTemp();
 
-                File file = new File(new File(MinecraftClient.getInstance().runDirectory, "schematics"), this.schematic.getTempFilename() + ".eschematic");
+                File file = new File(
+                    new File(MinecraftClient.getInstance().runDirectory, SettingsManager.getSchematicsDir()),
+                    this.schematic.getTempFilename()
+                );
                 ExtendedMCEditSchematic schematic = new ExtendedMCEditSchematic(Objects.requireNonNull(NbtIo.readCompressed(file)));
                 Vec3i pos = this.startPos;
 
@@ -265,6 +269,17 @@ public class ComposeSchematic extends Screen {
                 new Identifier("mtbe:textures/compose_schematic/map_to_image.png"),
                 (buttonWidget) -> {
                     switchLayer();
+
+                    ButtonWidgetTexturedFix bw = (ButtonWidgetTexturedFix) buttonWidget;
+                    switch(this.render){
+                        case Schematic:
+                            bw.setTexture(new Identifier("mtbe:textures/compose_schematic/map_to_image.png"));
+                            break;
+
+                        case Image:
+                            bw.setTexture(new Identifier("mtbe:textures/compose_schematic/image_to_map.png"));
+                            break;
+                    }
                 }
         ));
         viewTools.add(new ToolbarItem(
@@ -507,22 +522,16 @@ public class ComposeSchematic extends Screen {
         );
     }
 
-    protected void switchLayer(){
-//        (buttonWidget) -> {
-//            ButtonWidgetTexturedFix bw = (ButtonWidgetTexturedFix) buttonWidget;
+    protected void switchLayer() {
+        switch(this.render){
+            case Image:
+                this.render = Render.Schematic;
+                break;
 
-            switch(this.render){
-                case Image:
-                    this.render = Render.Schematic;
-//                    bw.setTexture(new Identifier("mtbe:textures/compose_schematic/map_to_image.png"));
-                    break;
-
-                case Schematic:
-                    this.render = Render.Image;
-//                    bw.setTexture(new Identifier("mtbe:textures/compose_schematic/image_to_map.png"));
-                    break;
-            }
-//        }
+            case Schematic:
+                this.render = Render.Image;
+                break;
+        }
     }
 
     public void positionChanged(String s){
@@ -585,137 +594,175 @@ public class ComposeSchematic extends Screen {
         return false;
     }
 
+
+
+
+
+
+
+
+
+    protected float blockSize = 2F;
+
+    public void makeImageToTexture(){
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(modifiedImage, "png", os);
+            InputStream is = new ByteArrayInputStream(os.toByteArray());
+
+            NativeImage i = NativeImage.read(is);
+            assert this.client != null;
+            this.renderedImage = this.client.getTextureManager().registerDynamicTexture("tmp", new NativeImageBackedTexture(i));
+        } catch (IOException e) {
+            this.renderedImage = new Identifier("mtbe:textures/menu/unknown.png");
+        }
+    }
+
+    public void renderImage(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        // If no image loaded
+        if(modifiedImage == null) {
+            drawCenteredText(matrices, this.textRenderer, new TranslatableText("compose.image-error"), this.width / 2, this.height / 2, Color.red.getRGB());
+            return;
+        }
+
+        float blockSize = this.blockSize;
+        float z = this.zoom;
+        blockSize *= z;
+
+        int paddingLeft = Math.round((modifiedImage.getWidth() * blockSize) / 2) + offsetX;
+        int paddingBottom = Math.round((modifiedImage.getHeight() * blockSize) / 2) + offsetY;
+
+        //Regenerate image if changed
+        if(renderedImageHash != modifiedImage.hashCode()){
+            renderedImageHash = modifiedImage.hashCode();
+            makeImageToTexture();
+        }
+
+        assert this.client != null;
+        this.client.getTextureManager().bindTexture(this.renderedImage);
+        drawTexture(
+            matrices,
+            Math.round(this.width / 2 - paddingLeft),
+            Math.round(this.height / 2 - paddingBottom),
+            Math.round(modifiedImage.getWidth() * blockSize),
+            Math.round(modifiedImage.getHeight() * blockSize),
+            0.0F,
+            0.0F,
+            16,
+            128,
+            16,
+            128
+        );
+
+    }
+
+    public void renderSchematic2D(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        if(schematic == null) {
+            drawCenteredText(
+                matrices,
+                this.textRenderer,
+                new TranslatableText("compose.generating-schematic"),
+                this.width / 2,
+                this.height / 2,
+                Color.yellow.getRGB()
+            );
+            return;
+        }
+
+        // TODO: make a png of blockmap to reduce lags
+
+        SchematicBlock[][][] blocks = this.schematic.getBlocks();
+
+        assert this.client != null;
+        TextureManager manager = this.client.getTextureManager();
+
+        float blockSize = this.blockSize;
+        float z = this.zoom;
+        blockSize *= z;
+
+        int paddingLeft     = Math.round((blocks.length * blockSize) / 2) + offsetX;
+        int paddingBottom   = Math.round((blocks[0].length * blockSize) / 2) + offsetY;
+
+        for (int x = 0; x < this.schematic.getWidth(); x++) {
+            for (int y = 0; y < this.schematic.getHeight(); y++) {
+                if (blocks[x][y][0] == null) continue;
+                SchematicBlock block = blocks[x][y][0];
+                if (block.getIdentifier().equals(new Identifier("minecraft:air"))) continue;
+
+                int x_pos = Math.round(this.width / 2 - paddingLeft + x * blockSize);
+                int y_pos = Math.round(this.height / 2 - paddingBottom + y * blockSize);
+
+                if(x_pos + blockSize <= 0) continue;
+                if(y_pos + blockSize <= 0) continue;
+
+                if(x_pos - blockSize >= this.width) continue;
+                if(y_pos - blockSize >= this.height) continue;
+
+                manager.bindTexture(new Identifier(block.getIdentifier().getNamespace() + ":textures/block/" + block.getIdentifier().getPath() + ".png"));
+                drawTexture(
+                    matrices,
+                    x_pos,
+                    y_pos,
+                    Math.round(blockSize),
+                    Math.round(blockSize),
+                    0.0F,
+                    0.0F,
+                    16,
+                    16,
+                    16,
+                    16
+                );
+            }
+        }
+    }
+
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
 
-        float blockSize = (float) 2.0;
-
         switch (this.render){
-
             case Image:
-                if(modifiedImage == null) {
-                    drawCenteredText(matrices, this.textRenderer, new TranslatableText("compose.image-error"), this.width / 2, this.height / 2, Color.red.getRGB());
-                    break;
-                }
-
-                float z = this.zoom;
-
-                blockSize *= z;
-
-                int paddingLeft = Math.round((modifiedImage.getWidth() * blockSize) / 2) + offsetX;
-                int paddingBottom = Math.round((modifiedImage.getHeight() * blockSize) / 2) + offsetY;
-
-                //Regenerate image if changed
-                if(renderedImageHash != modifiedImage.hashCode()){
-                    renderedImageHash = modifiedImage.hashCode();
-                    try {
-                        ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        ImageIO.write(modifiedImage, "png", os);
-                        InputStream is = new ByteArrayInputStream(os.toByteArray());
-
-                        NativeImage i = NativeImage.read(is);
-                        this.renderedImage = this.client.getTextureManager().registerDynamicTexture("tmp", new NativeImageBackedTexture(i));
-                    } catch (IOException e) {
-                        this.renderedImage = new Identifier("mtbe:textures/menu/unknown.png");
-                    }
-                }
-
-                this.client.getTextureManager().bindTexture(this.renderedImage);
-                drawTexture(
-                        matrices,
-                        Math.round(this.width / 2 - paddingLeft),
-                        Math.round(this.height / 2 - paddingBottom),
-                        Math.round(modifiedImage.getWidth() * blockSize),
-                        Math.round(modifiedImage.getHeight() * blockSize),
-                        0.0F,
-                        0.0F,
-                        16,
-                        128,
-                        16,
-                        128
-                );
-
+                renderImage(matrices, mouseX, mouseY, delta);
                 break;
 
             case Schematic:
-                if(schematic == null) {
-                    drawCenteredText(matrices, this.textRenderer, new TranslatableText("compose.generating-schematic"), this.width / 2, this.height / 2, Color.yellow.getRGB());
-                } else {
-
-                    // TODO: make a png of blockmap to reduce lags
-
-                    SchematicBlock[][][] blocks = this.schematic.getBlocks();
-
-                    assert this.client != null;
-                    TextureManager manager = this.client.getTextureManager();
-
-
-                    z = this.zoom;
-                    blockSize *= z;
-
-                    paddingLeft = Math.round((blocks.length * blockSize) / 2) + offsetX;
-                    paddingBottom = Math.round((blocks[0].length * blockSize) / 2) + offsetY;
-
-                    for (int x = 0; x < this.schematic.getWidth(); x++) {
-                        for (int y = 0; y < this.schematic.getHeight(); y++) {
-                            if (blocks[x][y][0] == null) continue;
-                            SchematicBlock block = blocks[x][y][0];
-                            if (block.getIdentifier().equals(new Identifier("minecraft:air"))) continue;
-
-                            int x_pos = Math.round(this.width / 2 - paddingLeft + x * blockSize);
-                            int y_pos = Math.round(this.height / 2 - paddingBottom + y * blockSize);
-
-                            if(x_pos + blockSize <= 0) continue;
-                            if(y_pos + blockSize <= 0) continue;
-
-                            if(x_pos - blockSize >= this.width) continue;
-                            if(y_pos - blockSize >= this.height) continue;
-
-                            manager.bindTexture(new Identifier(block.getIdentifier().getNamespace() + ":textures/block/" + block.getIdentifier().getPath() + ".png"));
-                            drawTexture(
-                                    matrices,
-                                    x_pos,
-                                    y_pos,
-                                    Math.round(blockSize),
-                                    Math.round(blockSize),
-                                    0.0F,
-                                    0.0F,
-                                    16,
-                                    16,
-                                    16,
-                                    16
-                            );
-                        }
-                    }
-                    break;
-                }
+                renderSchematic2D(matrices, mouseX, mouseY, delta);
+                break;
         }
 
 
-
+        // Blocks required
         if(schematic != null) {
             int blocksCount = this.schematic.getWidth() * this.schematic.getHeight() * this.schematic.getLength();
 
             drawCenteredText(
-                    matrices,
-                    this.textRenderer,
-                    Text.of("Blocks required: " + blocksCount),
-                    Math.round(this.width / 2),
-                    Math.round(50),
-                    (blocksCount > 9 * 4 * 64) ? (Color.red.getRGB()) : ( (blocksCount > 9 * 64) ? Color.yellow.getRGB() : Color.green.getRGB())
+                matrices,
+                this.textRenderer,
+                Text.of("Blocks required: " + blocksCount),
+                Math.round(this.width / 2),
+                Math.round(50),
+                (blocksCount > 9 * 4 * 64) ? (Color.red.getRGB()) : ( (blocksCount > 9 * 64) ? Color.yellow.getRGB() : Color.green.getRGB())
             );
-
         }
 
+
+        // Schematic info
         if(modifiedImage != null && this.schematic != null){
 
+            int start_x = this.x.getValue();
+            int start_y = this.y.getValue();
+            int start_z = this.z.getValue();
+
+            int end_x   = start_x + this.schematic.getWidth()  - 1;
+            int end_y   = start_y + this.schematic.getHeight() - 1;
+            int end_z   = start_z + this.schematic.getLength() - 1;
+
             String[] strings = new String[]{
-                    "Start = left-bottom corner",
-                    "XYZ: ["+this.x.getValue()+"; "+this.y.getValue()+"; "+this.z.getValue()+"]",
-                    "End = right-top corner",
-                    "XYZ: ["+(this.x.getValue() + this.schematic.getWidth() - 1)+"; "+(this.y.getValue() + this.schematic.getHeight() - 1)+"; "+(this.z.getValue() + this.schematic.getLength() - 1)+"]",
-                    "",
-                    "Dimensions: "+this.dimension.name()
+                "Start = left-bottom corner",
+                "XYZ: [" + start_x + "; "+ start_y + "; " + start_z + "]",
+                "End = right-top corner",
+                "XYZ: [" + end_x + "; " + end_y + "; " + end_z + "]",
+                "",
+                "Dimensions: " + this.dimension.name()
             };
 
             int startY = 30;
@@ -724,25 +771,25 @@ public class ComposeSchematic extends Screen {
                 String s = strings[i];
                 int width = this.textRenderer.getWidth(s);
                 drawCenteredText(
-                        matrices,
-                        this.textRenderer,
-                        Text.of(s),
-                        this.width - 5 - width / 2,
-                        startY + i * 10,
-                        Color.white.getRGB()
+                    matrices,
+                    this.textRenderer,
+                    Text.of(s),
+                    this.width - 5 - width / 2,
+                    startY + i * 10,
+                    Color.white.getRGB()
                 );
             }
         }
 
 
-        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 15, 16777215);
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 15, Color.white.getRGB());
 
         this.widthField.renderButton(matrices, mouseX, mouseY, delta);
         this.heightField.renderButton(matrices, mouseX, mouseY, delta);
 
-        drawCenteredText(matrices, this.textRenderer, Text.of("X:"), 7, this.height + 7 - 25 * 3, 16777215);
-        drawCenteredText(matrices, this.textRenderer, Text.of("Y:"), 7, this.height + 7 - 25 * 2, 16777215);
-        drawCenteredText(matrices, this.textRenderer, Text.of("Z:"), 7, this.height + 7 - 25 * 1, 16777215);
+        drawCenteredText(matrices, this.textRenderer, Text.of("X:"), 7, this.height + 7 - 25 * 3, Color.white.getRGB());
+        drawCenteredText(matrices, this.textRenderer, Text.of("Y:"), 7, this.height + 7 - 25 * 2, Color.white.getRGB());
+        drawCenteredText(matrices, this.textRenderer, Text.of("Z:"), 7, this.height + 7 - 25 * 1, Color.white.getRGB());
 
         this.x.renderButton(matrices, mouseX, mouseY, delta);
         this.y.renderButton(matrices, mouseX, mouseY, delta);
