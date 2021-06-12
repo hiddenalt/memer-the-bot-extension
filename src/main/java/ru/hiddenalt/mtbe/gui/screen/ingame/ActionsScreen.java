@@ -2,8 +2,6 @@ package ru.hiddenalt.mtbe.gui.screen.ingame;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.IPlayerContext;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -22,9 +20,9 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.Nullable;
 import ru.hiddenalt.mtbe.gui.screen.options.OptionsScreen;
 import ru.hiddenalt.mtbe.gui.ui.ButtonWidgetTexturedFix;
@@ -38,7 +36,7 @@ import ru.hiddenalt.mtbe.schematic.Schematic;
 
 import java.awt.*;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
@@ -474,13 +472,13 @@ public class ActionsScreen extends Screen {
                 }
 
                 if(process instanceof CommandProcess){
-                    Vec3d p = ((CommandProcess) process).getStartPos();
+                    Vec3i p = ((CommandProcess) process).getStartPos();
                     Schematic s = ((CommandProcess) process).getSchematic();
 
                     int d = ((CommandProcess) process).getDelay();
                     String c = ((CommandProcess) process).getCmd();
 
-                    renderingInfo.add("Start: ["+Math.round(p.x)+", "+Math.round(p.y)+", "+Math.round(p.z)+"]");
+                    renderingInfo.add("Start: ["+Math.round(p.getX())+", "+Math.round(p.getY())+", "+Math.round(p.getZ())+"]");
                     renderingInfo.add("Size: ["+s.getWidth()+", "+s.getHeight()+", "+s.getLength()+"]");
                     renderingInfo.add("Delay (ms): " + d);
                     renderingInfo.add(c);

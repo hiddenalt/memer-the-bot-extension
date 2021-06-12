@@ -1,15 +1,15 @@
 package ru.hiddenalt.mtbe.gui.ui;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class NumberFieldWidget extends TextFieldWidget {
     private int min = 0;
     private int max = 255;
+
+    public static final int MAX_NUMBER = Integer.MAX_VALUE;
+    public static final int MIN_NUMBER = Integer.MIN_VALUE;
 
     public NumberFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height) {
         super(textRenderer, x, y, width, height, Text.of(""));

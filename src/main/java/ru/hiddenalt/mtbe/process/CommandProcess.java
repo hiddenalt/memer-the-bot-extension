@@ -3,7 +3,7 @@ package ru.hiddenalt.mtbe.process;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.ArrayUtils;
 import ru.hiddenalt.mtbe.schematic.Schematic;
 import ru.hiddenalt.mtbe.schematic.SchematicBlock;
@@ -14,12 +14,12 @@ public class CommandProcess extends Process {
     protected Schematic schematic;
     protected int delay;
     protected String cmd;
-    protected Vec3d startPos;
+    protected Vec3i startPos;
 
     protected int commandPerIteration = 3;
 
 
-    public CommandProcess(Schematic schematic, int delay, String cmd, Vec3d startPos) {
+    public CommandProcess(Schematic schematic, int delay, String cmd, Vec3i startPos) {
         this.schematic = schematic;
         this.delay = delay;
         this.cmd = cmd;
@@ -35,14 +35,8 @@ public class CommandProcess extends Process {
             int height = schematic.getHeight();
             int length = schematic.getLength();
 
-
-            for(int x = 0; x < width; x++) {
-//                for (int y = 0; y < height; y++) {
-//                    ArrayUtils.reverse(blocks[x][y]);
-//                }
+            for(int x = 0; x < width; x++)
                 ArrayUtils.reverse(blocks[x]);
-            }
-//            ArrayUtils.reverse(blocks);
 
             int operations = 0;
 
@@ -64,27 +58,22 @@ public class CommandProcess extends Process {
 
                             if(MinecraftClient.getInstance().player == null) this.cancel();
 
-
-
-
                             String namespace = id.getNamespace();
                             String path = id.getPath();
                             String fullID = id.toString();
 
                             String sendToChat = this.cmd
-                                    .replaceAll("%X%", ""+ ((long)(this.startPos.x) + x))
-                                    .replaceAll("%Y%", ""+ ((long)(this.startPos.y) + y))
-                                    .replaceAll("%Z%", ""+ ((long)(this.startPos.z) + z - 1))
+                                    .replaceAll("%X%", ""+ (this.startPos.getX() + x))
+                                    .replaceAll("%Y%", ""+ (this.startPos.getY() + y))
+                                    .replaceAll("%Z%", ""+ (this.startPos.getZ() + z))
                                     .replaceAll("%NAMESPACE%", ""+namespace)
                                     .replaceAll("%PATH%", ""+path)
                                     .replaceAll("%BLOCK_ID%", ""+fullID)
-                                    ;
+                            ;
 
                             assert MinecraftClient.getInstance().player != null;
                             MinecraftClient.getInstance().player.sendChatMessage(sendToChat);
-                        } catch (InterruptedException | NullPointerException e) {
-                            //e.printStackTrace();
-                        }
+                        } catch (InterruptedException | NullPointerException ignored) { }
                     }
                 }
             }
@@ -102,7 +91,6 @@ public class CommandProcess extends Process {
             thread.stop();
             thread = null;
         }
-
     }
 
     @Override
@@ -167,11 +155,11 @@ public class CommandProcess extends Process {
         }
     }
 
-    public Vec3d getStartPos() {
+    public Vec3i getStartPos() {
         return startPos;
     }
 
-    public void setStartPos(Vec3d startPos) {
+    public void setStartPos(Vec3i startPos) {
         this.startPos = startPos;
     }
 }
