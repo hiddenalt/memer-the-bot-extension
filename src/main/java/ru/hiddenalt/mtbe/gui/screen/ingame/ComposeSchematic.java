@@ -33,6 +33,7 @@ import ru.hiddenalt.mtbe.schematic.ExtendedMCEditSchematic;
 import ru.hiddenalt.mtbe.schematic.Schematic;
 import ru.hiddenalt.mtbe.schematic.SchematicBlock;
 import ru.hiddenalt.mtbe.settings.SchematicDimension;
+import ru.hiddenalt.mtbe.utils.BufferedImageManipulator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -340,36 +341,7 @@ public class ComposeSchematic extends Screen {
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 0, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             if (this.modyfiedImage == null) return;
-
-            BufferedImage image = new BufferedImage(modyfiedImage.getWidth(), modyfiedImage.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics gr = image.getGraphics();
-            gr.drawImage(modyfiedImage, 0, 0, null);
-            gr.dispose();
-
-            int w = image.getWidth();
-            int h = image.getHeight();
-
-
-            for (int x = 0; x < w; x++){
-                for (int y = 0; y < h; y++){
-                    int pixel = image.getRGB(x,y);
-                    Color col = new Color(pixel, true);
-
-                    int a = col.getAlpha();
-                    if(a == 0) continue;
-                    int r = col.getRed();
-                    int g = col.getGreen();
-                    int b = col.getBlue();
-
-                    int avg = (r+g+b)/3;
-
-                    image.setRGB(x, y, (a<<24) | (avg<<16) | (avg<<8) | avg);
-                }
-            }
-
-            this.modyfiedImage = image;
-
+            this.modyfiedImage = (new BufferedImageManipulator(this.modyfiedImage)).makeGrayscale().getBufferedImage();
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.grayscale")),
@@ -377,16 +349,7 @@ public class ComposeSchematic extends Screen {
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 1, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             if (this.modyfiedImage == null) return;
-
-            Kernel kernel = new Kernel(3,3, new float[]{
-                    0.f, -1.f, 0.f,
-                    -1.f, 5.0f, -1.f,
-                    0.f, -1.f, 0.f});
-            ConvolveOp cop = new ConvolveOp(kernel,
-                    ConvolveOp.EDGE_NO_OP,
-                    null);
-            modyfiedImage = cop.filter(modyfiedImage, null);
-
+            this.modyfiedImage = (new BufferedImageManipulator(this.modyfiedImage)).makeSharpen().getBufferedImage();
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.sharpen")),
@@ -394,34 +357,7 @@ public class ComposeSchematic extends Screen {
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 2, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             if (this.modyfiedImage == null) return;
-
-            // Deep copy of modyfiedImage
-            BufferedImage tmp = new BufferedImage(modyfiedImage.getWidth(), modyfiedImage.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics g = tmp.getGraphics();
-            g.drawImage(modyfiedImage, 0, 0, null);
-            g.dispose();
-
-            int w = tmp.getWidth();
-            int h = tmp.getHeight();
-
-
-            for (int x = 0; x < w; x++){
-                for (int y = 0; y < h; y++){
-                    int pixel = tmp.getRGB(x,y);
-                    Color col = new Color(pixel, true);
-
-                    if(col.getAlpha() == 0) continue;
-
-                    col = new Color(255 - col.getRed(),
-                            255 - col.getGreen(),
-                            255 - col.getBlue());
-                    tmp.setRGB(x, y, col.getRGB());
-                }
-            }
-
-            this.modyfiedImage = tmp;
-
+            this.modyfiedImage = (new BufferedImageManipulator(this.modyfiedImage)).makeNegative().getBufferedImage();
             generateSchematic();
         },
                 new SimpleTooltip(textRenderer, new TranslatableText("composeSchematic.makeNegative")),
