@@ -33,7 +33,7 @@ public class SaveAsSchematicScreen extends TextInputDialogScreen {
     protected void onProceed(ButtonWidget buttonWidget) {
 //        try {
             // TODO
-            //this.schematic.saveAsSchematic(getInput().getText());
+            //this.schematic.saveAsSchematic(SettingsManager.getExportedPNGFolder() + getInput().getText());
 //        } catch (IOException e){
 //            assert this.client != null;
 //            this.client.openScreen(new ErrorScreen(this.parent, "Unable to save as schematic:\n"+e.getMessage()));

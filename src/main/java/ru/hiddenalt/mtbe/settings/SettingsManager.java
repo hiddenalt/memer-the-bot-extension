@@ -81,8 +81,25 @@ public class SettingsManager {
     }
 
     public static String getSettingsFile(){
-        return "settings.mtbe.json";
+        return getSettingsDir() + "settings.mtbe.json";
     }
+
+    public static String getSettingsDir(){
+        return "mtbe/";
+    }
+
+    public static String getSchematicsDir(){
+        return getSettingsDir() + "schematics/";
+    }
+
+    public static String getExportedPNGFolder(){
+        return getSettingsDir() + "exported/";
+    }
+
+    public static String getImportedPNGFolder(){
+        return getSettingsDir() + "imported/";
+    }
+
 
     public static SettingsEntity getSettings(){
         return loadedSettings;

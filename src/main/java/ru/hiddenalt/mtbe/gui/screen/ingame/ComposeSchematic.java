@@ -123,16 +123,29 @@ public class ComposeSchematic extends Screen {
 
     private Vec3d startPos;
 
+    protected void grabPlayerPosition(){
+        assert this.client != null;
+        assert this.client.player != null;
+        Vec3d vec = this.client.player.getPos();
+
+        int x = (int)vec.getX();
+        int y = (int)vec.getY();
+        int z = (int)vec.getZ();
+
+        this.startPos = new Vec3d(
+            (x < 0) ? (x - 1) : (x),
+            (y < 0) ? (y - 1) : (y),
+            (z < 0) ? (z - 1) : (z)
+        );
+    }
+
     protected void init(){
-
-
         assert this.client != null;
         assert this.client.player != null;
 
-        if(this.startPos == null)
-            this.startPos = this.client.player.getPos();
+        if(this.startPos == null) grabPlayerPosition();
 
-        this.closeButton = (ButtonWidget)this.addButton(new ButtonWidget(this.width - 25, 5, 20, 20, Text.of("X"), (button) -> {
+        this.closeButton = this.addButton(new ButtonWidget(this.width - 25, 5, 20, 20, Text.of("X"), (button) -> {
             assert this.client != null;
             this.client.openScreen(this.parent);
         }));
@@ -217,19 +230,15 @@ public class ComposeSchematic extends Screen {
 
         this.addButton(new ButtonWidgetTexturedFix(xPos, yPos + (iconHeight + offset) * 8, iconWidth, iconHeight, Text.of(""), (buttonWidget) -> {
             IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
-
-            IPlayerContext player = bar.getPlayerContext();
-            Vec3d vec = player.playerFeetAsVec();
-
 //            WorldRender.showPreview(this.schematic, new BlockPos(vec.x, vec.y, vec.z));
 
             int x1 = this.x.getValue();
             int y1 = this.y.getValue();
-            int z1 = this.z.getValue() - 1; // needs for some reason
+            int z1 = this.z.getValue();
 
             int x2 = this.x.getValue() + this.schematic.getWidth() - 1;
             int y2 = this.y.getValue() + this.schematic.getHeight() - 1;
-            int z2 = this.z.getValue() + this.schematic.getLength() - 2;
+            int z2 = this.z.getValue() + this.schematic.getLength() - 1;
 
             bar.getSelectionManager().removeAllSelections();
             bar.getSelectionManager().addSelection(
@@ -517,9 +526,8 @@ public class ComposeSchematic extends Screen {
         // Start cords + position grabber
 
         this.addButton(new ButtonWidget(15, this.height - 25 * 4, 50, 20, new TranslatableText("composeSchematic.grabPlayerPosition"), (buttonWidget) -> {
-            assert this.client != null;
-            assert this.client.player != null;
-            Vec3d pos = this.client.player.getPos();
+            grabPlayerPosition();
+            Vec3d pos = this.startPos;
             this.x.setValue((int) pos.x);
             this.y.setValue((int) pos.y);
             this.z.setValue((int) pos.z);

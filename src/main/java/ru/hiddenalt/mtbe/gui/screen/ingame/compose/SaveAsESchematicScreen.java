@@ -6,6 +6,7 @@ import net.minecraft.text.TranslatableText;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.gui.screen.TextInputDialogScreen;
 import ru.hiddenalt.mtbe.schematic.Schematic;
+import ru.hiddenalt.mtbe.settings.SettingsManager;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,13 +27,13 @@ public class SaveAsESchematicScreen extends TextInputDialogScreen {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss");
         LocalDateTime now = LocalDateTime.now();
 
-        this.setTextFieldText(new TranslatableText("export "+dtf.format(now)));
+        this.setTextFieldText(new TranslatableText("export "  + dtf.format(now) + ".eschematic"));
     }
 
     @Override
     protected void onProceed(ButtonWidget buttonWidget) {
         try {
-            this.schematic.saveAsESchematic(getInput().getText());
+            this.schematic.saveAsESchematic(SettingsManager.getSchematicsDir() + getInput().getText());
         } catch (IOException e){
             assert this.client != null;
             this.client.openScreen(new ErrorScreen(this.parent, "Unable to save as ESchematic:\n"+e.getMessage()));

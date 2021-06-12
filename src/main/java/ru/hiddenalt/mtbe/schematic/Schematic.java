@@ -5,6 +5,7 @@ import com.flowpowered.nbt.stream.NBTOutputStream;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.ArrayUtils;
+import ru.hiddenalt.mtbe.settings.SettingsManager;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,7 +33,7 @@ public class Schematic {
     }
 
     public String getTempFilename() {
-        return this.tempName;
+        return SettingsManager.getSettings() + this.tempName;
     }
 
     public void fillWith(SchematicBlock block) {
@@ -64,7 +65,7 @@ public class Schematic {
     public String associatedURL = "";
 
     public void saveAsESchematic(String filename) throws IOException {
-        File file = new File("schematics/" + filename + ".eschematic");
+        File file = new File(SettingsManager.getSchematicsDir() + filename);
         Map<String, Tag<?>> schematic = new HashMap();
         int width = this.width;
         int height = this.height;
@@ -72,11 +73,17 @@ public class Schematic {
         byte[] blocks = new byte[width * height * length];
         byte[] data = new byte[width * height * length];
 
+        String username = "unknown";
+        try {
+            username = MinecraftClient.getInstance().getSession().getUsername();
+        } catch(Exception ignored){ }
+
+
         schematic.put("ESchematicVersion", new StringTag("ESchematicVersion", "1.0"));
         schematic.put("CompiledBy", new StringTag("CompiledBy", "MTBE for Minecraft"));
         schematic.put("Name", new StringTag("Name", filename));
         schematic.put("URL", new StringTag("URL", associatedURL));
-        schematic.put("Author", new StringTag("Author", "me"));
+        schematic.put("Author", new StringTag("Author", username));
         schematic.put("Created", new StringTag("CreatedAt", new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(new Date())));
 
         schematic.put("Width", new ShortTag("Width", (short)width));
@@ -189,7 +196,7 @@ public class Schematic {
 
         g2d.dispose();
 
-        File file = new File(""+filename);
+        File file = new File(SettingsManager.getExportedPNGFolder() + filename);
         ImageIO.write(bufferedImage, "png", file);
     }
 

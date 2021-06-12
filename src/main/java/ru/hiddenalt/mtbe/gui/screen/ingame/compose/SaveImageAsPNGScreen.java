@@ -6,7 +6,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.TranslatableText;
 import ru.hiddenalt.mtbe.gui.screen.ErrorScreen;
 import ru.hiddenalt.mtbe.gui.screen.TextInputDialogScreen;
-import ru.hiddenalt.mtbe.schematic.Schematic;
+import ru.hiddenalt.mtbe.settings.SettingsManager;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -41,7 +41,7 @@ public class SaveImageAsPNGScreen extends TextInputDialogScreen {
         TextFieldWidget input = getInput();
         try{
             String filename = input.getText();
-            File file = new File(""+filename);
+            File file = new File(SettingsManager.getImportedPNGFolder() + filename);
             ImageIO.write(this.image, "png", file);
         } catch (IOException e){
             e.printStackTrace();
